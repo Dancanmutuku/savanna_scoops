@@ -1,0 +1,91 @@
+{% extends "admin_panel/base_admin.html" %}
+{% block admin_breadcrumb %}Operations{% endblock %}
+{% block admin_title %}Order Management{% endblock %}
+
+{% block admin_content %}
+<div class="sculpted-card rounded-[2.5rem] overflow-hidden border border-outline-variant/20">
+  <div class="px-8 py-6 flex justify-between items-center border-b border-outline-variant/10">
+    <div class="flex items-center gap-3">
+      {% for status, label in status_choices %}
+      <a href="?status={{ status }}" class="px-4 py-2 rounded-full text-xs font-bold transition-all {% if status_filter == status %}bg-primary text-white{% else %}bg-surface-container-high text-on-surface-variant hover:bg-surface-container-highest{% endif %}">
+        {{ label }}
+      </a>
+      {% endfor %}
+      <a href="?" class="px-4 py-2 rounded-full text-xs font-bold {% if not status_filter %}bg-primary text-white{% else %}bg-surface-container-high text-on-surface-variant hover:bg-surface-container-highest{% endif %}">All</a>
+    </div>
+    <span class="text-sm text-on-surface-variant font-medium">{{ orders.count }} orders</span>
+  </div>
+
+  <div class="overflow-x-auto">
+    <table class="w-full text-left">
+      <thead>
+        <tr class="bg-surface-container-low/50">
+          <th class="ss-table-header">Order #</th>
+          <th class="ss-table-header">Customer</th>
+          <th class="ss-table-header">Items</th>
+          <th class="ss-table-header">Total</th>
+          <th class="ss-table-header">Payment</th>
+          <th class="ss-table-header">Status</th>
+          <th class="ss-table-header text-right">Actions</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-outline-variant/10">
+        {% for order in orders %}
+        <tr class="hover:bg-surface-container-high/30 transition-colors">
+          <td class="px-6 py-5">
+            <span class="font-mono text-xs font-bold text-primary">{{ order.order_number }}</span>
+            <p class="text-[10px] text-on-surface-variant mt-0.5">{{ order.created_at|date:"d M Y, H:i" }}</p>
+          </td>
+          <td class="px-6 py-5">
+            <p class="text-sm font-bold">{{ order.customer_name }}</p>
+            <p class="text-[10px] text-on-surface-variant">{{ order.customer_phone }}</p>
+          </td>
+          <td class="px-6 py-5">
+            <p class="text-xs text-on-surface-variant">{{ order.items.count }} item(s)</p>
+          </td>
+          <td class="px-6 py-5">
+            <span class="font-sans font-black text-sm">KSh {{ order.total|floatformat:0 }}</span>
+          </td>
+          <td class="px-6 py-5">
+            <span class="px-2 py-1 rounded-full text-[10px] font-black uppercase {% if order.payment_status == 'paid' %}bg-green-100 text-green-700{% else %}bg-tertiary/10 text-tertiary{% endif %}">
+              {{ order.payment_status }}
+            </span>
+          </td>
+          <td class="px-6 py-5">
+            <select onchange="updateStatus({{ order.id }}, this.value)"
+                    class="bg-surface-container-high border-none rounded-xl py-1.5 px-3 text-xs font-bold outline-none focus:ring-2 focus:ring-primary/20">
+              {% for val, label in order.STATUS_CHOICES %}
+              <option value="{{ val }}" {% if order.status == val %}selected{% endif %}>{{ label }}</option>
+              {% endfor %}
+            </select>
+          </td>
+          <td class="px-6 py-5 text-right">
+            <a href="#" class="p-2 hover:bg-surface-container-highest rounded-xl inline-flex text-on-surface-variant">
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+            </a>
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="7" class="px-6 py-16 text-center text-on-surface-variant">No orders found.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+async function updateStatus(orderId, status) {
+  try {
+    const resp = await fetch(`/admin-panel/orders/update/${orderId}/`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCookie('csrftoken') },
+      body: JSON.stringify({ status }),
+    });
+    const data = await resp.json();
+    if (data.success) showToast(`Order updated: ${data.display}`);
+  } catch(e) { showToast('Failed to update order', 'error'); }
+}
+</script>
+{% endblock %}

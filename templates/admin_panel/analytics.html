@@ -1,0 +1,84 @@
+{% extends "admin_panel/base_admin.html" %}
+{% block admin_breadcrumb %}Analytics{% endblock %}
+{% block admin_title %}Analytics{% endblock %}
+
+{% block admin_content %}
+<div class="space-y-8">
+  <!-- Summary Cards -->
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+    <div class="sculpted-card p-6 rounded-3xl">
+      <p class="text-xs font-bold text-on-surface-variant uppercase tracking-widest mb-2">Total Revenue</p>
+      <h3 class="text-3xl font-sans font-black tracking-tighter">KSh {{ total_revenue|floatformat:0 }}</h3>
+    </div>
+    <div class="sculpted-card p-6 rounded-3xl">
+      <p class="text-xs font-bold text-on-surface-variant uppercase tracking-widest mb-2">Total Orders</p>
+      <h3 class="text-3xl font-sans font-black tracking-tighter">{{ total_orders }}</h3>
+    </div>
+    <div class="sculpted-card p-6 rounded-3xl">
+      <p class="text-xs font-bold text-on-surface-variant uppercase tracking-widest mb-2">Paid Orders</p>
+      <h3 class="text-3xl font-sans font-black tracking-tighter">{{ paid_orders }}</h3>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+    <div class="sculpted-card p-8 rounded-[2rem]">
+      <h3 class="text-lg font-sans font-bold mb-6">30-Day Revenue Trend</h3>
+      <canvas id="lineChart" height="200"></canvas>
+    </div>
+
+    <div class="sculpted-card p-8 rounded-[2rem]">
+      <h3 class="text-lg font-sans font-bold mb-6">Top Flavors by Revenue</h3>
+      <div class="space-y-4">
+        {% for item in flavor_sales %}
+        <div>
+          <div class="flex justify-between mb-1">
+            <span class="text-sm font-bold text-on-surface">{{ item.flavor_name }}</span>
+            <span class="text-sm font-bold text-primary">KSh {{ item.total_revenue|floatformat:0 }}</span>
+          </div>
+          <div class="h-2 bg-surface-container-high rounded-full overflow-hidden">
+            {% if flavor_sales %}
+            <div class="h-full bg-primary rounded-full" style="width:{% widthratio item.total_revenue flavor_sales.0.total_revenue 100 %}%"></div>
+            {% endif %}
+          </div>
+          <p class="text-[10px] text-on-surface-variant mt-1">{{ item.total_qty }} units sold</p>
+        </div>
+        {% empty %}
+        <p class="text-on-surface-variant text-sm text-center py-8">No sales data yet</p>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+const dailyRevenue = {{ daily_revenue|safe }};
+const ctx = document.getElementById('lineChart').getContext('2d');
+new Chart(ctx, {
+  type: 'line',
+  data: {
+    labels: dailyRevenue.map(d => d.date),
+    datasets: [{
+      label: 'Revenue (KSh)',
+      data: dailyRevenue.map(d => d.revenue),
+      borderColor: '#9a4523',
+      backgroundColor: 'rgba(154,69,35,0.08)',
+      fill: true,
+      tension: 0.4,
+      pointBackgroundColor: '#9a4523',
+      pointRadius: 3,
+    }]
+  },
+  options: {
+    responsive: true,
+    plugins: { legend: { display: false } },
+    scales: {
+      y: { beginAtZero: true, grid: { color: 'rgba(0,0,0,0.04)' } },
+      x: { grid: { display: false }, ticks: { maxTicksLimit: 8 } }
+    }
+  }
+});
+</script>
+{% endblock %}

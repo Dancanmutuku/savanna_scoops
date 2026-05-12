@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+{% block title %}Track Your Order – Savanna Scoops{% endblock %}
+
+{% block body %}
+<div class="flex flex-col min-h-screen">
+  {% include "partials/customer_header.html" %}
+  <main class="flex-1 bg-surface px-4 md:px-10 py-16">
+    <div class="max-w-2xl mx-auto">
+      <h1 class="text-4xl font-sans font-black tracking-tight mb-2">Track Your Order</h1>
+      <p class="text-on-surface-variant mb-10">Enter your order number to get live updates on your delivery.</p>
+
+      <form method="get" class="flex gap-3 mb-10">
+        <input type="text" name="order_id" value="{{ order_id }}" placeholder="e.g. SS-ABC12345"
+               class="flex-1 bg-surface-container-high border-2 border-outline-variant/20 rounded-2xl py-4 px-6 font-black tracking-widest text-lg focus:border-primary/40 outline-none transition-all"/>
+        <button type="submit" class="px-8 py-4 bg-primary text-white rounded-2xl font-bold hover:opacity-90 transition-all whitespace-nowrap">
+          Track Order
+        </button>
+      </form>
+
+      {% if order %}
+      <div class="sculpted-card rounded-[2.5rem] p-8">
+        <div class="flex justify-between items-start mb-8">
+          <div>
+            <p class="text-xs font-bold text-on-surface-variant uppercase tracking-widest mb-1">Order Number</p>
+            <h2 class="text-2xl font-sans font-black font-mono">{{ order.order_number }}</h2>
+          </div>
+          <span class="px-4 py-2 rounded-full text-sm font-black uppercase tracking-widest
+            {% if order.status == 'delivered' %}bg-green-100 text-green-700
+            {% elif order.status == 'cancelled' %}bg-tertiary/10 text-tertiary
+            {% else %}bg-primary/10 text-primary{% endif %}">
+            {{ order.get_status_display }}
+          </span>
+        </div>
+
+        <!-- Progress bar -->
+        <div class="mb-8">
+          <div class="h-2 bg-surface-container-high rounded-full overflow-hidden">
+            <div class="h-full bg-primary rounded-full transition-all duration-1000" style="width:{{ order.status_percentage }}%"></div>
+          </div>
+          <div class="flex justify-between mt-3">
+            {% for stage in stages %}<span class="text-[10px] font-bold uppercase text-on-surface-variant">{{ stage }}</span>{% endfor %}
+          </div>
+        </div>
+
+        <!-- Order Items -->
+        <div class="space-y-3 mb-6">
+          {% for item in order.items.all %}
+          <div class="flex justify-between items-center py-3 border-b border-outline-variant/10 last:border-0">
+            <span class="text-sm font-bold">{{ item.quantity }}× {{ item.flavor_name }}</span>
+            <span class="text-sm text-on-surface-variant font-semibold">KSh {{ item.subtotal|floatformat:0 }}</span>
+          </div>
+          {% endfor %}
+        </div>
+
+        <div class="flex justify-between font-sans font-black text-lg">
+          <span>Total</span>
+          <span class="text-secondary">KSh {{ order.total|floatformat:0 }}</span>
+        </div>
+
+        {% if order.mpesa_receipt %}
+        <div class="mt-6 p-4 bg-green-50 rounded-2xl border border-green-200">
+          <p class="text-xs font-bold text-green-700 uppercase tracking-widest">M-Pesa Receipt</p>
+          <p class="font-mono font-bold text-green-800 mt-1">{{ order.mpesa_receipt }}</p>
+        </div>
+        {% endif %}
+      </div>
+
+      {% elif order_id %}
+      <div class="sculpted-card rounded-[2.5rem] p-10 text-center">
+        <div class="text-4xl mb-4">🔍</div>
+        <h3 class="font-sans font-bold text-xl mb-2">Order Not Found</h3>
+        <p class="text-on-surface-variant">No order found with number "{{ order_id }}". Check your confirmation email.</p>
+      </div>
+
+      {% else %}
+      <div class="sculpted-card rounded-[2.5rem] p-10 text-center">
+        <div class="w-24 h-24 bg-surface-container-highest rounded-[2.5rem] flex items-center justify-center mx-auto mb-6 text-5xl">🚴</div>
+        <h3 class="text-2xl font-sans font-black text-on-surface tracking-tight">Scoop Tracker</h3>
+        <p class="text-on-surface-variant max-w-sm mx-auto mt-3 text-base">
+          Enter your order number above to track your delivery in real-time.
+        </p>
+        {% if user.is_authenticated %}
+        <a href="{% url 'my_orders' %}" class="mt-6 inline-block px-8 py-3 bg-secondary text-white rounded-2xl font-bold hover:scale-105 transition-all">
+          View My Orders
+        </a>
+        {% endif %}
+      </div>
+      {% endif %}
+    </div>
+  </main>
+</div>
+{% endblock %}

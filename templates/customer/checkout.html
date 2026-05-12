@@ -1,0 +1,303 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Checkout – Savanna Scoops{% endblock %}
+
+{% block body %}
+<div class="flex flex-col min-h-screen">
+  {% include "partials/customer_header.html" %}
+
+  <main class="flex-1 bg-surface px-4 md:px-10 py-12">
+    <div class="max-w-5xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-12">
+      
+      <!-- Order Summary -->
+      <div class="space-y-8">
+        <h2 class="text-4xl font-sans font-black tracking-tight">Your Order</h2>
+        
+        <div class="sculpted-card rounded-[2rem] p-8" id="cartSection">
+          {% if cart_items %}
+          <div class="space-y-5" id="cartItems">
+            {% for item in cart_items %}
+            <div class="flex gap-4 items-center" data-id="{{ item.id }}">
+              {% if item.image %}
+              <img src="{{ item.image }}" class="w-16 h-16 rounded-2xl object-cover flex-shrink-0" alt="{{ item.name }}"/>
+              {% else %}
+              <div class="w-16 h-16 rounded-2xl bg-surface-container-highest flex items-center justify-center text-2xl flex-shrink-0">🍦</div>
+              {% endif %}
+              <div class="flex-1 min-w-0">
+                <p class="text-sm font-black truncate">{{ item.name }}</p>
+                <p class="text-xs text-on-surface-variant">Single Scoop · {{ item.qty }}×</p>
+              </div>
+              <div class="text-right flex-shrink-0">
+                <p class="text-sm font-bold">KSh {{ item.price|floatformat:0 }}</p>
+                <button onclick="removeItem('{{ item.id }}')" class="text-[10px] text-tertiary font-bold uppercase tracking-tighter hover:underline mt-0.5">Remove</button>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+          
+          <div class="pt-6 mt-6 border-t border-outline-variant/20 space-y-3" id="totalsSection">
+            <div class="flex justify-between text-sm">
+              <span class="text-on-surface-variant">Subtotal</span>
+              <span class="font-bold" id="subtotalDisplay">KSh {{ subtotal|floatformat:0 }}</span>
+            </div>
+            <div class="flex justify-between text-sm">
+              <span class="text-on-surface-variant">Delivery Fee</span>
+              <span class="font-bold" id="deliveryDisplay">KSh {{ delivery_fee|floatformat:0 }}</span>
+            </div>
+            <div class="flex justify-between text-xl mt-4 pt-4 border-t-2 border-dashed border-outline-variant/20">
+              <span class="font-sans font-black">Total</span>
+              <span class="font-sans font-black text-secondary" id="totalDisplay">KSh {{ total|floatformat:0 }}</span>
+            </div>
+          </div>
+          {% else %}
+          <div class="text-center py-16">
+            <div class="w-16 h-16 bg-surface-container-high rounded-3xl flex items-center justify-center mx-auto mb-4 text-on-surface-variant text-2xl">🛍️</div>
+            <p class="text-on-surface-variant font-medium">Your scooping bag is empty.</p>
+            <a href="{% url 'shop' %}" class="mt-4 inline-block text-secondary font-bold underline underline-offset-4">Browse Flavors</a>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Payment -->
+      <div class="space-y-8">
+        <h2 class="text-4xl font-sans font-black tracking-tight">Checkout</h2>
+        
+        <!-- Customer Details -->
+        <div class="sculpted-card rounded-[2rem] p-8 space-y-4">
+          <h3 class="font-sans font-bold text-lg mb-4">Delivery Details</h3>
+          <div>
+            <label class="text-[10px] font-black uppercase tracking-[0.2em] text-on-surface-variant mb-2 block">Full Name</label>
+            <input type="text" id="customerName" value="{% if user.is_authenticated %}{{ user.get_full_name }}{% endif %}" 
+                   placeholder="Jane Mwangi"
+                   class="w-full bg-surface-container-low border-2 border-outline-variant/20 rounded-2xl py-3.5 px-4 font-semibold focus:border-primary/40 outline-none transition-all"/>
+          </div>
+          <div>
+            <label class="text-[10px] font-black uppercase tracking-[0.2em] text-on-surface-variant mb-2 block">Email</label>
+            <input type="email" id="customerEmail" value="{% if user.is_authenticated %}{{ user.email }}{% endif %}"
+                   placeholder="jane@example.com"
+                   class="w-full bg-surface-container-low border-2 border-outline-variant/20 rounded-2xl py-3.5 px-4 font-semibold focus:border-primary/40 outline-none transition-all"/>
+          </div>
+          <div>
+            <label class="text-[10px] font-black uppercase tracking-[0.2em] text-on-surface-variant mb-2 block">Delivery Address</label>
+            <textarea id="deliveryAddress" placeholder="e.g. Westlands, Nairobi – Apt 4B..." rows="2"
+                      class="w-full bg-surface-container-low border-2 border-outline-variant/20 rounded-2xl py-3.5 px-4 font-semibold focus:border-primary/40 outline-none transition-all resize-none"></textarea>
+          </div>
+        </div>
+
+        <!-- M-Pesa Payment -->
+        <div class="sculpted-card rounded-[2rem] p-8 border-2 border-green-500/30 bg-green-50/10">
+          <div class="flex justify-between items-start mb-6">
+            <div class="flex items-center gap-3">
+              <div class="w-12 h-12 bg-[#48B04B] rounded-2xl flex items-center justify-center p-2.5">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/1/15/M-PESA_LOGO-01.svg" class="w-full grayscale brightness-[100]" alt="M-Pesa"/>
+              </div>
+              <div>
+                <h3 class="font-black text-lg">M-Pesa Express</h3>
+                <p class="text-xs text-on-surface-variant font-medium">Safe & Secure Payment</p>
+              </div>
+            </div>
+            <div class="w-6 h-6 rounded-full bg-green-500 flex items-center justify-center text-white text-xs">✓</div>
+          </div>
+          
+          <div class="space-y-4">
+            <div>
+              <label class="text-[10px] font-black uppercase tracking-[0.2em] text-on-surface-variant mb-2 block">M-Pesa Phone Number</label>
+              <div class="relative">
+                <span class="absolute left-4 top-1/2 -translate-y-1/2 text-sm font-bold text-on-surface-variant">+254</span>
+                <input type="tel" id="mpesaPhone" placeholder="712 345 678" maxlength="12"
+                       class="w-full bg-surface-container-lowest border-2 border-outline-variant/20 rounded-2xl py-4 pl-14 pr-4 font-black tracking-widest text-lg focus:border-green-500/50 outline-none transition-all"/>
+              </div>
+            </div>
+            
+            {% if cart_items %}
+            <button id="payBtn" onclick="initiatePayment()"
+                    class="w-full py-5 bg-[#48B04B] text-white rounded-2xl font-black text-lg shadow-xl shadow-green-500/20 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-3">
+              Pay KSh <span id="payAmount">{{ total|floatformat:0 }}</span>
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
+            </button>
+            {% else %}
+            <button class="w-full py-5 bg-surface-container-high text-on-surface-variant rounded-2xl font-black text-lg opacity-60 cursor-not-allowed">
+              Add items to cart first
+            </button>
+            {% endif %}
+            
+            <p class="text-[10px] text-center text-on-surface-variant max-w-[240px] mx-auto leading-relaxed">
+              You will receive an M-Pesa prompt on your phone to complete the transaction.
+            </p>
+          </div>
+        </div>
+
+        <!-- Other payment methods -->
+        <div class="sculpted-card rounded-[2rem] p-6 opacity-50 grayscale cursor-not-allowed">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 bg-surface-container-high rounded-xl flex items-center justify-center text-on-surface-variant text-sm">💳</div>
+            <div>
+              <span class="font-bold text-on-surface">Card Payment</span>
+              <p class="text-[10px] text-on-surface-variant">Coming soon</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Payment Status Modal -->
+  <div id="paymentModal" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-surface-container-lowest rounded-[2.5rem] p-10 w-full max-w-sm text-center shadow-2xl">
+      <div id="paymentSpinner" class="">
+        <div class="w-20 h-20 border-4 border-green-200 border-t-green-500 rounded-full animate-spin mx-auto mb-6"></div>
+        <h3 class="font-sans font-bold text-xl mb-2">Waiting for Payment</h3>
+        <p class="text-on-surface-variant text-sm">Check your phone for the M-Pesa prompt and enter your PIN.</p>
+        <p class="text-xs text-on-surface-variant/60 mt-4">This may take up to 30 seconds...</p>
+      </div>
+      <div id="paymentSuccess" class="hidden">
+        <div class="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6 text-4xl">✅</div>
+        <h3 class="font-sans font-bold text-2xl mb-2 text-green-700">Payment Confirmed!</h3>
+        <p class="text-on-surface-variant text-sm mb-6">Your order has been placed successfully.</p>
+        <a id="confirmationLink" href="#" class="block w-full py-4 bg-primary text-white rounded-2xl font-bold hover:opacity-90 transition-all">
+          View Order Details
+        </a>
+      </div>
+      <div id="paymentError" class="hidden">
+        <div class="w-20 h-20 bg-tertiary/10 rounded-full flex items-center justify-center mx-auto mb-6 text-4xl">❌</div>
+        <h3 class="font-sans font-bold text-xl mb-2 text-tertiary">Payment Failed</h3>
+        <p id="errorMsg" class="text-on-surface-variant text-sm mb-6">Please try again.</p>
+        <button onclick="closePaymentModal()" class="w-full py-4 bg-surface-container-high text-on-surface rounded-2xl font-bold hover:bg-surface-container-highest transition-all">
+          Try Again
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let checkoutRequestId = null;
+let pollInterval = null;
+let orderId = null;
+
+async function removeItem(flavorId) {
+  try {
+    const resp = await fetch('/cart/remove/', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCookie('csrftoken') },
+      body: JSON.stringify({ flavor_id: flavorId }),
+    });
+    const data = await resp.json();
+    if (data.success) {
+      updateCartBadge(data.cart_count);
+      // Refresh page to update totals
+      location.reload();
+    }
+  } catch(e) { showToast('Failed to remove item', 'error'); }
+}
+
+async function initiatePayment() {
+  const name = document.getElementById('customerName').value.trim();
+  const email = document.getElementById('customerEmail').value.trim();
+  const phone = document.getElementById('mpesaPhone').value.trim();
+  const address = document.getElementById('deliveryAddress').value.trim();
+
+  if (!name) { showToast('Please enter your name', 'error'); return; }
+  if (!email) { showToast('Please enter your email', 'error'); return; }
+  if (!phone || phone.length < 9) { showToast('Please enter a valid phone number', 'error'); return; }
+  if (!address) { showToast('Please enter your delivery address', 'error'); return; }
+
+  const payBtn = document.getElementById('payBtn');
+  payBtn.textContent = 'Creating order...';
+  payBtn.disabled = true;
+
+  try {
+    // 1. Create order
+    const orderResp = await fetch('/orders/create/', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCookie('csrftoken') },
+      body: JSON.stringify({ name, email, phone: `+254${phone}`, address }),
+    });
+    const orderData = await orderResp.json();
+    if (!orderData.success) {
+      showToast(orderData.error || 'Order creation failed', 'error');
+      return;
+    }
+    orderId = orderData.order_id;
+
+    // 2. Initiate STK Push
+    payBtn.textContent = 'Sending M-Pesa prompt...';
+    const payResp = await fetch('/payments/mpesa/initiate/', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCookie('csrftoken') },
+      body: JSON.stringify({ phone: `+254${phone}`, order_id: orderId }),
+    });
+    const payData = await payResp.json();
+    
+    if (payData.success) {
+      checkoutRequestId = payData.checkout_request_id;
+      document.getElementById('paymentModal').classList.remove('hidden');
+      document.getElementById('paymentSpinner').classList.remove('hidden');
+      document.getElementById('paymentSuccess').classList.add('hidden');
+      document.getElementById('paymentError').classList.add('hidden');
+      startPolling(payData.order_number);
+      showToast(payData.message || 'M-Pesa prompt sent!');
+    } else {
+      showToast(payData.error || 'Payment initiation failed. Check your details.', 'error');
+    }
+  } catch(e) {
+    showToast('An error occurred. Please try again.', 'error');
+    console.error(e);
+  } finally {
+    payBtn.innerHTML = `Pay KSh <span id="payAmount">{{ total|floatformat:0 }}</span> →`;
+    payBtn.disabled = false;
+  }
+}
+
+function startPolling(orderNumber) {
+  let attempts = 0;
+  const maxAttempts = 20;
+  
+  pollInterval = setInterval(async () => {
+    attempts++;
+    if (attempts > maxAttempts) {
+      clearInterval(pollInterval);
+      showPaymentError('Payment timed out. If you were charged, contact us.');
+      return;
+    }
+    
+    try {
+      const resp = await fetch('/payments/mpesa/status/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCookie('csrftoken') },
+        body: JSON.stringify({ checkout_request_id: checkoutRequestId }),
+      });
+      const data = await resp.json();
+      
+      if (data.status === 'success') {
+        clearInterval(pollInterval);
+        showPaymentSuccess(data.order_number);
+      } else if (data.status === 'cancelled' || data.status === 'failed') {
+        clearInterval(pollInterval);
+        showPaymentError(data.error || 'Payment was cancelled.');
+      }
+    } catch(e) { /* Keep polling */ }
+  }, 3000);
+}
+
+function showPaymentSuccess(orderNumber) {
+  document.getElementById('paymentSpinner').classList.add('hidden');
+  document.getElementById('paymentSuccess').classList.remove('hidden');
+  document.getElementById('confirmationLink').href = `/orders/confirmation/${orderNumber}/`;
+}
+
+function showPaymentError(msg) {
+  document.getElementById('paymentSpinner').classList.add('hidden');
+  document.getElementById('paymentError').classList.remove('hidden');
+  document.getElementById('errorMsg').textContent = msg;
+}
+
+function closePaymentModal() {
+  document.getElementById('paymentModal').classList.add('hidden');
+  clearInterval(pollInterval);
+}
+</script>
+{% endblock %}

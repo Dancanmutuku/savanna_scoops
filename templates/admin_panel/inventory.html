@@ -1,0 +1,176 @@
+{% extends "admin_panel/base_admin.html" %}
+{% block admin_breadcrumb %}Inventory{% endblock %}
+{% block admin_title %}Store Inventory Matrix{% endblock %}
+
+{% block admin_content %}
+<div class="bg-surface-container-low/50 rounded-[3rem] p-8 md:p-12 border border-outline-variant/20">
+  <div class="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8">
+    <div>
+      <h3 class="text-2xl font-sans font-bold text-on-surface">Inventory Matrix</h3>
+      <p class="text-sm text-on-surface-variant mt-1">Real-time stock levels across all categories</p>
+    </div>
+    <div class="flex items-center gap-3">
+      <a href="{% url 'admin_flavors' %}" class="px-4 py-2 bg-surface-container-high rounded-2xl text-sm font-bold text-on-surface-variant hover:bg-surface-container-highest transition-colors">
+        Manage Flavors
+      </a>
+      <button onclick="document.getElementById('addItemModal').classList.remove('hidden')"
+              class="flex items-center gap-2 px-6 py-3 bg-primary text-white rounded-2xl font-bold shadow-lg shadow-primary/20 hover:scale-105 active:scale-95 transition-all">
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+        Add Stock Item
+      </button>
+    </div>
+  </div>
+
+  {% if low_stock_items %}
+  <div class="mb-6 p-4 bg-tertiary/10 border border-tertiary/20 rounded-2xl flex items-center gap-3">
+    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-tertiary flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M12 3c-4.97 0-9 4.03-9 9s4.03 9 9 9 9-4.03 9-9-4.03-9-9-9z"/></svg>
+    <p class="text-sm font-bold text-tertiary">{{ low_stock_items|length }} item(s) need restocking</p>
+  </div>
+  {% endif %}
+
+  <div class="overflow-x-auto">
+    <table class="w-full text-left">
+      <thead>
+        <tr class="bg-surface-container-low/50">
+          <th class="ss-table-header">SKU</th>
+          <th class="ss-table-header">Item Description</th>
+          <th class="ss-table-header">Category</th>
+          <th class="ss-table-header">Stock Level</th>
+          <th class="ss-table-header">Threshold</th>
+          <th class="ss-table-header text-right">Actions</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-outline-variant/10">
+        {% for item in items %}
+        <tr class="hover:bg-surface-container-high/30 transition-colors group">
+          <td class="px-6 py-6">
+            <span class="text-xs font-mono font-bold text-primary underline decoration-primary/20 underline-offset-4">{{ item.sku }}</span>
+          </td>
+          <td class="px-6 py-6">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-xl bg-surface-container-high flex items-center justify-center text-primary text-xs font-bold uppercase">
+                {{ item.category|first|upper }}
+              </div>
+              <div>
+                <p class="text-sm font-black text-on-surface">{{ item.name }}</p>
+                <p class="text-[10px] text-on-surface-variant">Updated {{ item.updated_at|timesince }} ago</p>
+              </div>
+            </div>
+          </td>
+          <td class="px-6 py-6">
+            <span class="px-3 py-1 bg-surface-container-high rounded-full text-[10px] font-black uppercase text-on-surface-variant">
+              {{ item.get_category_display }}
+            </span>
+          </td>
+          <td class="px-6 py-6">
+            <div class="flex flex-col gap-1.5">
+              <div class="flex justify-between items-end">
+                <span class="text-sm font-black {% if item.stock_status == 'critical' or item.stock_status == 'out' %}text-tertiary{% else %}text-on-surface{% endif %}">
+                  {{ item.current_stock }} {{ item.unit }}
+                </span>
+                <span class="text-[10px] text-on-surface-variant font-bold">{{ item.stock_percentage }}%</span>
+              </div>
+              <div class="h-1.5 w-36 bg-surface-container-high rounded-full overflow-hidden">
+                <div class="h-full rounded-full {% if item.stock_status == 'critical' or item.stock_status == 'out' %}bg-tertiary{% elif item.stock_status == 'low' %}bg-yellow-500{% else %}bg-primary{% endif %}"
+                     style="width:{{ item.stock_percentage }}%"></div>
+              </div>
+            </div>
+          </td>
+          <td class="px-6 py-6 text-sm text-on-surface-variant font-mono">
+            &lt; {{ item.min_stock }} {{ item.unit }}
+          </td>
+          <td class="px-6 py-6 text-right">
+            <button onclick="openUpdateModal({{ item.id }}, '{{ item.name }}', {{ item.current_stock }})"
+                    class="p-2 hover:bg-surface-container-highest rounded-xl transition-colors text-on-surface-variant opacity-0 group-hover:opacity-100">
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+            </button>
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="6" class="px-6 py-16 text-center text-on-surface-variant">No inventory items yet.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Update Stock Modal -->
+<div id="updateModal" class="hidden fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center">
+  <div class="bg-surface-container-lowest rounded-[2rem] p-8 w-full max-w-md shadow-2xl">
+    <h3 class="font-sans font-bold text-xl mb-6" id="modalTitle">Update Stock</h3>
+    <div class="space-y-4">
+      <div>
+        <label class="text-xs font-bold uppercase tracking-widest text-on-surface-variant block mb-2">New Stock Level</label>
+        <input type="number" id="newStockInput" step="0.01" class="w-full bg-surface-container-high border-none rounded-2xl py-4 px-4 text-lg font-bold focus:ring-2 focus:ring-primary/30 outline-none"/>
+      </div>
+      <div>
+        <label class="text-xs font-bold uppercase tracking-widest text-on-surface-variant block mb-2">Movement Type</label>
+        <select id="movementType" class="w-full bg-surface-container-high border-none rounded-2xl py-4 px-4 font-bold outline-none focus:ring-2 focus:ring-primary/30">
+          <option value="adjustment">Adjustment</option>
+          <option value="in">Stock In</option>
+          <option value="out">Stock Out</option>
+          <option value="waste">Waste/Loss</option>
+        </select>
+      </div>
+      <div>
+        <label class="text-xs font-bold uppercase tracking-widest text-on-surface-variant block mb-2">Notes</label>
+        <input type="text" id="stockNotes" placeholder="Optional notes..." class="w-full bg-surface-container-high border-none rounded-2xl py-4 px-4 outline-none focus:ring-2 focus:ring-primary/30"/>
+      </div>
+    </div>
+    <div class="flex gap-3 mt-8">
+      <button onclick="document.getElementById('updateModal').classList.add('hidden')"
+              class="flex-1 py-3 rounded-2xl bg-surface-container-high text-on-surface-variant font-bold hover:bg-surface-container-highest transition-colors">
+        Cancel
+      </button>
+      <button onclick="submitStockUpdate()" id="submitBtn"
+              class="flex-1 py-3 rounded-2xl bg-primary text-white font-bold hover:opacity-90 transition-all">
+        Update Stock
+      </button>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let currentItemId = null;
+
+function openUpdateModal(itemId, itemName, currentStock) {
+  currentItemId = itemId;
+  document.getElementById('modalTitle').textContent = `Update: ${itemName}`;
+  document.getElementById('newStockInput').value = currentStock;
+  document.getElementById('updateModal').classList.remove('hidden');
+}
+
+async function submitStockUpdate() {
+  const stock = document.getElementById('newStockInput').value;
+  const type = document.getElementById('movementType').value;
+  const notes = document.getElementById('stockNotes').value;
+  const btn = document.getElementById('submitBtn');
+
+  btn.textContent = 'Updating...';
+  btn.disabled = true;
+
+  try {
+    const resp = await fetch(`/admin-panel/inventory/update/${currentItemId}/`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCookie('csrftoken') },
+      body: JSON.stringify({ stock: parseFloat(stock), type, notes }),
+    });
+    const data = await resp.json();
+    if (data.success) {
+      showToast('Stock updated successfully!');
+      document.getElementById('updateModal').classList.add('hidden');
+      setTimeout(() => location.reload(), 1000);
+    } else {
+      showToast('Failed to update stock', 'error');
+    }
+  } catch(e) {
+    showToast('An error occurred', 'error');
+  } finally {
+    btn.textContent = 'Update Stock';
+    btn.disabled = false;
+  }
+}
+</script>
+{% endblock %}

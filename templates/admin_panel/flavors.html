@@ -1,0 +1,78 @@
+{% extends "admin_panel/base_admin.html" %}
+{% block admin_breadcrumb %}Flavors{% endblock %}
+{% block admin_title %}Flavor Catalogue{% endblock %}
+
+{% block admin_content %}
+<div class="sculpted-card rounded-[2.5rem] overflow-hidden border border-outline-variant/20">
+  <div class="px-8 py-6 flex justify-between items-center border-b border-outline-variant/10">
+    <h3 class="text-lg font-sans font-bold">All Flavors</h3>
+    <a href="{% url 'admin:store_flavor_add' %}" class="flex items-center gap-2 px-5 py-2.5 bg-primary text-white rounded-2xl text-sm font-bold hover:opacity-90 transition-all">
+      + Add Flavor
+    </a>
+  </div>
+  <div class="overflow-x-auto">
+    <table class="w-full text-left">
+      <thead>
+        <tr class="bg-surface-container-low/50">
+          <th class="ss-table-header">Flavor</th>
+          <th class="ss-table-header">Category</th>
+          <th class="ss-table-header">Price</th>
+          <th class="ss-table-header">Stock</th>
+          <th class="ss-table-header">Sales</th>
+          <th class="ss-table-header">Status</th>
+          <th class="ss-table-header text-right">Actions</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-outline-variant/10">
+        {% for flavor in flavors %}
+        <tr class="hover:bg-surface-container-high/30 transition-colors">
+          <td class="px-6 py-5">
+            <div class="flex items-center gap-3">
+              {% if flavor.display_image %}
+              <img src="{{ flavor.display_image }}" class="w-12 h-12 rounded-2xl object-cover" alt="{{ flavor.name }}"/>
+              {% else %}
+              <div class="w-12 h-12 rounded-2xl bg-surface-container-highest flex items-center justify-center text-2xl">🍦</div>
+              {% endif %}
+              <div>
+                <p class="text-sm font-black">{{ flavor.name }}</p>
+                <p class="text-[10px] text-on-surface-variant">{{ flavor.rating }}★ · {{ flavor.slug }}</p>
+              </div>
+            </div>
+          </td>
+          <td class="px-6 py-5">
+            <span class="px-2 py-1 bg-surface-container-high rounded-lg text-[10px] font-bold uppercase text-on-surface-variant">
+              {{ flavor.category.name|default:"Uncategorized" }}
+            </span>
+          </td>
+          <td class="px-6 py-5 font-sans font-black text-sm">KSh {{ flavor.price|floatformat:0 }}</td>
+          <td class="px-6 py-5">
+            <div class="flex items-center gap-2">
+              <span class="text-sm font-bold {% if flavor.status == 'low' or flavor.status == 'out' %}text-tertiary{% else %}text-on-surface{% endif %}">
+                {{ flavor.stock }}L
+              </span>
+              <div class="h-1.5 w-16 bg-surface-container-high rounded-full overflow-hidden">
+                <div class="h-full {% if flavor.status == 'out' %}bg-tertiary{% elif flavor.status == 'low' %}bg-yellow-400{% else %}bg-primary{% endif %} rounded-full"
+                     style="width:{{ flavor.stock_percentage }}%"></div>
+              </div>
+            </div>
+          </td>
+          <td class="px-6 py-5 text-sm text-on-surface-variant font-bold">{{ flavor.total_sales }}</td>
+          <td class="px-6 py-5">
+            <span class="px-2 py-1 rounded-full text-[10px] font-black uppercase {% if flavor.status == 'high' %}bg-green-100 text-green-700{% elif flavor.status == 'low' %}bg-yellow-100 text-yellow-700{% else %}bg-tertiary/10 text-tertiary{% endif %}">
+              {{ flavor.get_status_display }}
+            </span>
+          </td>
+          <td class="px-6 py-5 text-right">
+            <a href="{% url 'admin:store_flavor_change' flavor.id %}" class="px-3 py-1.5 bg-surface-container-high rounded-xl text-xs font-bold hover:bg-surface-container-highest transition-colors text-on-surface-variant">
+              Edit
+            </a>
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="7" class="px-6 py-16 text-center text-on-surface-variant">No flavors yet. Add via Django Admin.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

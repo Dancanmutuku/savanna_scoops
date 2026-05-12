@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{% block title %}Savanna Scoops{% endblock %}</title>
+  <meta name="description" content="{% block description %}Hand-crafted artisanal ice cream from the heart of Kenya{% endblock %}">
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=Be+Vietnam+Pro:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Tailwind CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'ui-sans-serif', 'system-ui'],
+            body: ['"Be Vietnam Pro"', 'sans-serif'],
+          },
+          colors: {
+            surface: '#fdf9f0',
+            'surface-dim': '#dddad1',
+            'surface-container-lowest': '#ffffff',
+            'surface-container-low': '#f7f3ea',
+            'surface-container': '#f1eee5',
+            'surface-container-high': '#ece8df',
+            'surface-container-highest': '#e6e2d9',
+            'on-surface': '#1c1c17',
+            'on-surface-variant': '#534439',
+            'inverse-surface': '#31312b',
+            'inverse-on-surface': '#f4f0e8',
+            'outline': '#867468',
+            'outline-variant': '#d8c2b5',
+            'primary': '#8e4e14',
+            'on-primary': '#ffffff',
+            'primary-container': '#f4a261',
+            'secondary': '#9a4523',
+            'on-secondary': '#ffffff',
+            'secondary-container': '#ff946c',
+            'tertiary': '#bb152c',
+            'on-tertiary': '#ffffff',
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    body { font-family: 'Be Vietnam Pro', sans-serif; background: #fdf9f0; color: #1c1c17; }
+    .font-sans { font-family: 'Plus Jakarta Sans', sans-serif; }
+    
+    .sculpted-card {
+      background: #ffffff;
+      border: 1px solid rgba(216,194,181,0.3);
+      box-shadow: 0 4px 20px -5px rgba(154,69,35,0.05);
+      transition: all 0.3s ease;
+    }
+    .sculpted-card:hover {
+      box-shadow: 0 10px 30px -10px rgba(154,69,35,0.12);
+      transform: translateY(-2px);
+    }
+
+    .ss-table-header {
+      padding: 16px 24px;
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: #9a4523;
+      text-align: left;
+    }
+
+    /* Animations */
+    @keyframes fadeInUp { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
+    @keyframes slideIn { from { opacity:0; transform:translateX(-20px); } to { opacity:1; transform:translateX(0); } }
+    @keyframes pulse-ring { 0% { transform:scale(1); opacity:1; } 100% { transform:scale(1.4); opacity:0; } }
+    
+    .fade-in-up { animation: fadeInUp 0.5s ease forwards; }
+    .slide-in { animation: slideIn 0.4s ease forwards; }
+    
+    /* Custom scrollbar */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #f1eee5; }
+    ::-webkit-scrollbar-thumb { background: #d8c2b5; border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: #9a4523; }
+
+    /* Toast */
+    #toast-container {
+      position: fixed; bottom: 24px; right: 24px; z-index: 9999;
+      display: flex; flex-direction: column; gap: 8px; pointer-events: none;
+    }
+    .toast {
+      padding: 12px 20px; border-radius: 16px; font-size: 14px; font-weight: 600;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.12); pointer-events: all;
+      animation: fadeInUp 0.3s ease; min-width: 200px; max-width: 340px;
+    }
+    .toast-success { background: #1c1c17; color: #f4f0e8; }
+    .toast-error { background: #bb152c; color: white; }
+
+    /* No scrollbar utility */
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+  </style>
+
+  {% block extra_css %}{% endblock %}
+</head>
+<body class="antialiased selection:bg-primary/20 selection:text-primary">
+
+  <div id="toast-container"></div>
+
+  {% block body %}{% endblock %}
+
+  <!-- Toast JS -->
+  <script>
+    function showToast(message, type='success') {
+      const container = document.getElementById('toast-container');
+      const toast = document.createElement('div');
+      toast.className = `toast toast-${type}`;
+      toast.textContent = message;
+      container.appendChild(toast);
+      setTimeout(() => { toast.style.opacity='0'; toast.style.transform='translateY(10px)'; toast.style.transition='all 0.3s ease'; }, 2500);
+      setTimeout(() => toast.remove(), 3000);
+    }
+
+    // Cart count updater
+    function updateCartBadge(count) {
+      const badges = document.querySelectorAll('.cart-badge');
+      badges.forEach(b => {
+        b.textContent = count;
+        b.style.display = count > 0 ? 'flex' : 'none';
+      });
+    }
+
+    // CSRF helper
+    function getCookie(name) {
+      let value = null;
+      document.cookie.split(';').forEach(c => {
+        const [k, v] = c.trim().split('=');
+        if (k === name) value = decodeURIComponent(v);
+      });
+      return value;
+    }
+
+    async function addToCart(flavorId, flavorName) {
+      try {
+        const resp = await fetch('/cart/add/', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCookie('csrftoken') },
+          body: JSON.stringify({ flavor_id: flavorId }),
+        });
+        const data = await resp.json();
+        if (data.success) {
+          updateCartBadge(data.cart_count);
+          showToast(`${flavorName} added to cart! 🍦`);
+        }
+      } catch(e) { showToast('Something went wrong', 'error'); }
+    }
+
+    // Auto-dismiss Django messages
+    document.addEventListener('DOMContentLoaded', () => {
+      document.querySelectorAll('.django-message').forEach(el => {
+        const type = el.dataset.type === 'error' ? 'error' : 'success';
+        showToast(el.textContent.trim(), type);
+      });
+    });
+  </script>
+
+  {% block extra_js %}{% endblock %}
+</body>
+</html>

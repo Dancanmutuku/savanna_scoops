@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}Our Story – Savanna Scoops{% endblock %}
+{% block body %}
+<div class="flex flex-col min-h-screen">
+  {% include "partials/customer_header.html" %}
+  <main class="flex-1 bg-surface">
+    <section class="relative h-64 overflow-hidden">
+      <img src="https://images.unsplash.com/photo-1541167760496-1628856ab772?auto=format&fit=crop&q=80&w=2000" class="w-full h-full object-cover brightness-50" alt="About"/>
+      <div class="absolute inset-0 flex items-center justify-center text-center">
+        <div>
+          <h1 class="text-5xl font-sans font-black text-white tracking-tighter">Our Story</h1>
+          <p class="text-white/80 mt-3 text-lg">Hand-churned since 2012</p>
+        </div>
+      </div>
+    </section>
+
+    <div class="max-w-3xl mx-auto px-6 py-20 space-y-12">
+      <div>
+        <h2 class="text-3xl font-sans font-black tracking-tight mb-4">Born from a love for flavour</h2>
+        <p class="text-on-surface-variant leading-relaxed text-lg">Savanna Scoops was founded in Westlands, Nairobi, with a single mission: to create ice cream that reflects the vibrant, rich culture of Kenya. Every scoop is handcrafted in small batches using locally sourced ingredients.</p>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="sculpted-card p-6 rounded-3xl text-center">
+          <h3 class="text-4xl font-sans font-black text-primary mb-2">12+</h3>
+          <p class="text-sm font-bold text-on-surface-variant">Years of crafting</p>
+        </div>
+        <div class="sculpted-card p-6 rounded-3xl text-center">
+          <h3 class="text-4xl font-sans font-black text-secondary mb-2">30+</h3>
+          <p class="text-sm font-bold text-on-surface-variant">Unique flavours</p>
+        </div>
+        <div class="sculpted-card p-6 rounded-3xl text-center">
+          <h3 class="text-4xl font-sans font-black text-primary mb-2">10k+</h3>
+          <p class="text-sm font-bold text-on-surface-variant">Happy customers</p>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+{% endblock %}

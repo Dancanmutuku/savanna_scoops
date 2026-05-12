@@ -1,0 +1,213 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Savanna Scoops – Artisanal Ice Cream, Nairobi{% endblock %}
+
+{% block body %}
+<div class="flex flex-col min-h-screen">
+  {% include "partials/customer_header.html" %}
+
+  <main class="flex-1 bg-surface">
+    <!-- Hero -->
+    <section class="relative h-[60vh] md:h-[70vh] flex items-center justify-center overflow-hidden">
+      <div class="absolute inset-0">
+        <img src="{{ settings.hero_image_url }}" 
+             class="w-full h-full object-cover brightness-75" 
+             alt="Savanna Scoops Hero"/>
+        <div class="absolute inset-0 bg-gradient-to-t from-[#fdf9f0] via-transparent to-black/20"></div>
+      </div>
+      
+      <div class="relative z-10 text-center px-4 max-w-3xl fade-in-up">
+        <span class="inline-block px-6 py-2 bg-secondary/90 backdrop-blur-md text-white rounded-full text-xs font-black uppercase tracking-widest mb-6 shadow-xl shadow-secondary/30">
+          {{ settings.tagline }}
+        </span>
+        <h1 class="text-5xl md:text-8xl font-sans font-black text-white tracking-tighter leading-none mb-6 drop-shadow-2xl">
+          Savanna<br>
+          <span class="text-[#ff946c]">Scoops.</span>
+        </h1>
+        <p class="text-lg md:text-xl text-white/90 font-medium max-w-xl mx-auto mb-10 leading-relaxed">
+          Small-batch artisanal ice cream crafted with the finest ingredients from the heart of Kenya.
+        </p>
+        <div class="flex flex-wrap items-center justify-center gap-4">
+          <a href="#flavors" class="px-8 py-4 bg-primary text-white rounded-2xl font-bold text-lg shadow-2xl shadow-primary/40 hover:scale-105 active:scale-95 transition-all">
+            Shop All Flavors
+          </a>
+          <a href="{% url 'about' %}" class="px-8 py-4 bg-white/10 backdrop-blur-md text-white rounded-2xl font-bold text-lg border border-white/20 hover:bg-white/20 transition-all">
+            Our Story
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- Filter Bar -->
+    <section id="flavors" class="px-6 md:px-10 py-16 max-w-7xl mx-auto">
+      <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
+        <div>
+          <p class="text-secondary font-black uppercase tracking-widest text-xs mb-2">Curated Collections</p>
+          <h2 class="text-4xl md:text-5xl font-sans font-black tracking-tight text-on-surface">Signature Scoops</h2>
+        </div>
+        
+        <div class="flex flex-col gap-3">
+          <!-- Search -->
+          <form method="get" class="relative">
+            <svg xmlns="http://www.w3.org/2000/svg" class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-on-surface-variant" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+            <input type="text" name="q" value="{{ search }}" placeholder="Search flavors..." class="bg-surface-container-high border-none rounded-full py-3 pl-10 pr-4 text-sm w-64 focus:ring-2 focus:ring-primary/20 outline-none"/>
+          </form>
+          
+          <!-- Category filters -->
+          <div class="flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar">
+            <a href="{% url 'shop' %}" class="px-5 py-2.5 rounded-full text-sm font-bold whitespace-nowrap transition-all {% if not active_filter or active_filter == 'all' %}bg-secondary text-white shadow-lg{% else %}bg-surface-container-high text-on-surface-variant hover:bg-surface-container-highest{% endif %}">
+              All
+            </a>
+            <a href="?filter=creamy" class="px-5 py-2.5 rounded-full text-sm font-bold whitespace-nowrap transition-all {% if active_filter == 'creamy' %}bg-secondary text-white{% else %}bg-surface-container-high text-on-surface-variant hover:bg-surface-container-highest{% endif %}">
+              Creamy
+            </a>
+            <a href="?filter=fruity" class="px-5 py-2.5 rounded-full text-sm font-bold whitespace-nowrap transition-all {% if active_filter == 'fruity' %}bg-secondary text-white{% else %}bg-surface-container-high text-on-surface-variant hover:bg-surface-container-highest{% endif %}">
+              Fruity
+            </a>
+            <a href="?filter=dairy-free" class="px-5 py-2.5 rounded-full text-sm font-bold whitespace-nowrap transition-all {% if active_filter == 'dairy-free' %}bg-secondary text-white{% else %}bg-surface-container-high text-on-surface-variant hover:bg-surface-container-highest{% endif %}">
+              Dairy-Free
+            </a>
+          </div>
+        </div>
+      </div>
+
+      {% if search %}
+      <p class="text-sm text-on-surface-variant mb-8">
+        {{ flavors.count }} result{{ flavors.count|pluralize }} for "<strong>{{ search }}</strong>"
+        <a href="{% url 'shop' %}" class="text-secondary font-bold ml-2">Clear</a>
+      </p>
+      {% endif %}
+
+      <!-- Flavor Grid -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        {% for flavor in flavors %}
+        <div class="group slide-in" style="animation-delay:{{ forloop.counter0 }}00ms">
+          <div class="sculpted-card rounded-[2.5rem] overflow-hidden">
+            <div class="relative h-72 overflow-hidden">
+              {% if flavor.display_image %}
+              <img src="{{ flavor.display_image }}" 
+                   class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                   alt="{{ flavor.name }}" loading="lazy"/>
+              {% else %}
+              <div class="w-full h-full bg-surface-container-highest flex items-center justify-center text-6xl">🍦</div>
+              {% endif %}
+              
+              <!-- Category badge -->
+              <div class="absolute top-4 left-4">
+                <span class="px-3 py-1 bg-white/90 backdrop-blur-md rounded-full text-[10px] font-black uppercase tracking-widest text-on-surface shadow-sm">
+                  {{ flavor.category.name|default:"Artisanal" }}
+                </span>
+              </div>
+              
+              {% if flavor.status == 'out' %}
+              <div class="absolute inset-0 bg-black/40 flex items-center justify-center">
+                <span class="px-4 py-2 bg-white/90 rounded-full text-xs font-black uppercase tracking-widest text-tertiary">Out of Stock</span>
+              </div>
+              {% elif flavor.status == 'low' %}
+              <div class="absolute top-4 right-4">
+                <span class="px-3 py-1 bg-tertiary text-white rounded-full text-[10px] font-black uppercase tracking-widest">Low Stock</span>
+              </div>
+              {% endif %}
+              
+              <!-- Quick add (hover) -->
+              {% if flavor.status != 'out' %}
+              <button onclick="addToCart('{{ flavor.id }}', '{{ flavor.name|escapejs }}')"
+                      class="absolute bottom-4 right-4 w-12 h-12 bg-secondary text-white rounded-2xl flex items-center justify-center transform translate-y-12 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300 shadow-xl hover:bg-primary">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+              </button>
+              {% endif %}
+            </div>
+            
+            <div class="p-8">
+              <div class="flex justify-between items-start mb-2">
+                <h3 class="text-2xl font-sans font-black tracking-tight group-hover:text-secondary transition-colors">{{ flavor.name }}</h3>
+                <span class="text-xl font-sans font-bold text-on-surface">KSh {{ flavor.price|floatformat:0 }}</span>
+              </div>
+              <p class="text-sm text-on-surface-variant mb-6 line-clamp-2 leading-relaxed">{{ flavor.description }}</p>
+              
+              <div class="flex items-center justify-between">
+                <!-- Star Rating -->
+                <div class="flex items-center gap-1">
+                  {% for i in "12345" %}
+                  <div class="w-2.5 h-2.5 rounded-full {% if forloop.counter <= flavor.rating|floatformat:0|add:0 %}bg-yellow-500{% else %}bg-surface-container-highest{% endif %}"></div>
+                  {% endfor %}
+                  <span class="text-[10px] font-bold text-on-surface-variant ml-1">{{ flavor.rating }}</span>
+                </div>
+                
+                {% if flavor.status != 'out' %}
+                <button onclick="addToCart('{{ flavor.id }}', '{{ flavor.name|escapejs }}')"
+                        class="px-6 py-2.5 bg-surface-container-highest rounded-full text-xs font-bold text-on-surface uppercase tracking-widest hover:bg-secondary hover:text-white transition-all">
+                  Add to Bag
+                </button>
+                {% else %}
+                <span class="px-6 py-2.5 bg-surface-container-high rounded-full text-xs font-bold text-on-surface-variant uppercase tracking-widest opacity-50">
+                  Sold Out
+                </span>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+        </div>
+        {% empty %}
+        <div class="col-span-3 text-center py-20">
+          <div class="w-20 h-20 bg-surface-container-highest rounded-3xl flex items-center justify-center mx-auto mb-4 text-4xl">🍦</div>
+          <h3 class="text-xl font-sans font-bold text-on-surface mb-2">No flavors found</h3>
+          <p class="text-on-surface-variant">{% if search %}Try a different search.{% else %}Check back soon!{% endif %}</p>
+        </div>
+        {% endfor %}
+      </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="bg-surface-container-low py-20 mt-8">
+      <div class="max-w-7xl mx-auto px-6 md:px-10">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div class="text-center p-8">
+            <div class="w-16 h-16 bg-primary/10 rounded-3xl flex items-center justify-center mx-auto mb-4 text-3xl">🌿</div>
+            <h4 class="font-sans font-bold text-lg mb-2">All-Natural Ingredients</h4>
+            <p class="text-sm text-on-surface-variant leading-relaxed">Sourced from local Kenyan farms with zero artificial additives.</p>
+          </div>
+          <div class="text-center p-8">
+            <div class="w-16 h-16 bg-secondary/10 rounded-3xl flex items-center justify-center mx-auto mb-4 text-3xl">🚴</div>
+            <h4 class="font-sans font-bold text-lg mb-2">Fast Delivery</h4>
+            <p class="text-sm text-on-surface-variant leading-relaxed">Express delivery across Nairobi in insulated packs. Fresh every time.</p>
+          </div>
+          <div class="text-center p-8">
+            <div class="w-16 h-16 bg-primary/10 rounded-3xl flex items-center justify-center mx-auto mb-4 text-3xl">📱</div>
+            <h4 class="font-sans font-bold text-lg mb-2">M-Pesa Payments</h4>
+            <p class="text-sm text-on-surface-variant leading-relaxed">Pay securely via M-Pesa Express. One tap and you're done.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Footer -->
+  <footer class="bg-inverse-surface text-inverse-on-surface py-12 px-6 md:px-10">
+    <div class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-10">
+      <div>
+        <h4 class="font-sans font-bold text-xl mb-3">Savanna Scoops</h4>
+        <p class="text-sm text-inverse-on-surface/60 leading-relaxed">Hand-churned artisanal ice cream since 2012. Made with love in Nairobi.</p>
+      </div>
+      <div>
+        <h5 class="font-bold text-xs uppercase tracking-widest mb-4 text-inverse-on-surface/40">Quick Links</h5>
+        <ul class="space-y-2 text-sm text-inverse-on-surface/70">
+          <li><a href="{% url 'shop' %}" class="hover:text-inverse-on-surface transition-colors">Shop</a></li>
+          <li><a href="{% url 'about' %}" class="hover:text-inverse-on-surface transition-colors">About Us</a></li>
+          <li><a href="{% url 'tracking' %}" class="hover:text-inverse-on-surface transition-colors">Track Order</a></li>
+        </ul>
+      </div>
+      <div>
+        <h5 class="font-bold text-xs uppercase tracking-widest mb-4 text-inverse-on-surface/40">Contact</h5>
+        <p class="text-sm text-inverse-on-surface/70">{{ settings.address }}</p>
+        <p class="text-sm text-inverse-on-surface/70 mt-1">{{ settings.phone }}</p>
+        <p class="text-sm text-inverse-on-surface/70">{{ settings.email }}</p>
+      </div>
+    </div>
+    <div class="max-w-7xl mx-auto mt-10 pt-6 border-t border-white/10 text-center text-xs text-inverse-on-surface/30">
+      © 2024 Savanna Scoops. All rights reserved.
+    </div>
+  </footer>
+</div>
+{% endblock %}

@@ -1,0 +1,248 @@
+{% extends "admin_panel/base_admin.html" %}
+{% block admin_breadcrumb %}Dashboard{% endblock %}
+{% block admin_title %}Overview{% endblock %}
+
+{% block admin_content %}
+<div class="space-y-8">
+
+  <!-- Stats Grid -->
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+    <!-- Revenue -->
+    <div class="sculpted-card p-6 rounded-3xl fade-in-up" style="animation-delay:0.1s">
+      <div class="flex justify-between items-start mb-4">
+        <div class="p-3 rounded-2xl bg-primary/10 shadow-sm">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>
+        </div>
+        <div class="flex items-center gap-1 font-sans font-bold text-sm {% if revenue_trend >= 0 %}text-green-600{% else %}text-tertiary{% endif %}">
+          {% if revenue_trend >= 0 %}↑{% else %}↓{% endif %} {{ revenue_trend|floatformat:1 }}%
+        </div>
+      </div>
+      <p class="text-xs font-bold text-on-surface-variant uppercase tracking-widest mb-1 opacity-70">Daily Revenue</p>
+      <h3 class="text-3xl font-sans font-black tracking-tighter text-on-surface">KSh {{ daily_revenue|floatformat:0 }}</h3>
+      <div class="mt-4 pt-4 border-t border-outline-variant/10">
+        <p class="text-[11px] text-on-surface-variant">vs. yesterday</p>
+      </div>
+    </div>
+
+    <!-- Active Orders -->
+    <div class="sculpted-card p-6 rounded-3xl fade-in-up" style="animation-delay:0.2s">
+      <div class="flex justify-between items-start mb-4">
+        <div class="p-3 rounded-2xl bg-secondary/10 shadow-sm">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-secondary" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
+        </div>
+        <span class="text-xs font-bold text-green-600 bg-green-50 px-2 py-1 rounded-full">Live</span>
+      </div>
+      <p class="text-xs font-bold text-on-surface-variant uppercase tracking-widest mb-1 opacity-70">Active Orders</p>
+      <h3 class="text-3xl font-sans font-black tracking-tighter text-on-surface">{{ active_orders }}</h3>
+      <div class="mt-4 pt-4 border-t border-outline-variant/10">
+        <p class="text-[11px] text-on-surface-variant">In progress now</p>
+      </div>
+    </div>
+
+    <!-- Freezer Temp (Static Display) -->
+    <div class="sculpted-card p-6 rounded-3xl fade-in-up" style="animation-delay:0.3s">
+      <div class="flex justify-between items-start mb-4">
+        <div class="p-3 rounded-2xl bg-blue-600/10 shadow-sm">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z"/></svg>
+        </div>
+        <span class="text-xs font-bold text-blue-600">↑ 0.1°C</span>
+      </div>
+      <p class="text-xs font-bold text-on-surface-variant uppercase tracking-widest mb-1 opacity-70">Freezer Temp</p>
+      <h3 class="text-3xl font-sans font-black tracking-tighter text-on-surface">-18.4°C</h3>
+      <div class="mt-4 pt-4 border-t border-outline-variant/10">
+        <p class="text-[11px] text-on-surface-variant">Optimal range: -18 to -22°C</p>
+      </div>
+    </div>
+
+    <!-- Total Orders -->
+    <div class="sculpted-card p-6 rounded-3xl fade-in-up" style="animation-delay:0.4s">
+      <div class="flex justify-between items-start mb-4">
+        <div class="p-3 rounded-2xl bg-secondary/10 shadow-sm">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-secondary" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+        </div>
+        <span class="text-xs font-bold text-green-600">↑ 8%</span>
+      </div>
+      <p class="text-xs font-bold text-on-surface-variant uppercase tracking-widest mb-1 opacity-70">Total Orders</p>
+      <h3 class="text-3xl font-sans font-black tracking-tighter text-on-surface">{{ recent_transactions.count|add:"0" }}</h3>
+      <div class="mt-4 pt-4 border-t border-outline-variant/10">
+        <p class="text-[11px] text-on-surface-variant">All time</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Content Grid -->
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+    <!-- Left: Chart + Transactions -->
+    <div class="lg:col-span-2 space-y-6">
+      <!-- Revenue Chart -->
+      <div class="sculpted-card p-8 rounded-[2.5rem] relative overflow-hidden">
+        <div class="flex justify-between items-start mb-6">
+          <div>
+            <h3 class="text-xl font-sans font-bold tracking-tight text-on-surface">Revenue Overview</h3>
+            <p class="text-sm text-on-surface-variant mt-1">Last 8 days performance</p>
+          </div>
+          <a href="{% url 'admin_analytics' %}" class="px-4 py-2 bg-surface-container-high rounded-full text-xs font-bold text-on-surface-variant uppercase tracking-widest hover:bg-surface-container-highest transition-colors">
+            Full Analytics
+          </a>
+        </div>
+        <canvas id="revenueChart" height="160"></canvas>
+      </div>
+
+      <!-- Recent Transactions -->
+      <div class="sculpted-card rounded-[2rem] overflow-hidden">
+        <div class="px-8 py-6 flex justify-between items-center bg-surface-container-lowest border-b border-outline-variant/10">
+          <h3 class="text-lg font-sans font-bold">Recent Transactions</h3>
+          <a href="{% url 'admin_orders' %}" class="text-xs font-bold text-secondary uppercase tracking-widest flex items-center gap-1 hover:gap-2 transition-all">
+            View All →
+          </a>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-left">
+            <thead>
+              <tr class="bg-surface-container-low/50">
+                <th class="ss-table-header">Reference</th>
+                <th class="ss-table-header">Customer</th>
+                <th class="ss-table-header">Amount</th>
+                <th class="ss-table-header">Status</th>
+                <th class="ss-table-header text-right">Method</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-outline-variant/10">
+              {% for tx in recent_transactions %}
+              <tr class="hover:bg-surface-container-high/30 transition-colors">
+                <td class="px-6 py-4">
+                  <span class="text-xs font-mono text-on-surface-variant">{{ tx.order_number }}</span>
+                </td>
+                <td class="px-6 py-4">
+                  <p class="text-sm font-bold text-on-surface">{{ tx.customer_name }}</p>
+                  <p class="text-[10px] text-on-surface-variant uppercase">{{ tx.items.first.flavor_name|default:"–" }}</p>
+                </td>
+                <td class="px-6 py-4">
+                  <span class="text-sm font-sans font-black">KSh {{ tx.total|floatformat:0 }}</span>
+                </td>
+                <td class="px-6 py-4">
+                  <span class="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest
+                    {% if tx.payment_status == 'paid' %}bg-green-100 text-green-700
+                    {% elif tx.status == 'cancelled' %}bg-red-100 text-red-700
+                    {% else %}bg-tertiary/10 text-tertiary{% endif %}">
+                    {% if tx.payment_status == 'paid' %}Paid{% else %}{{ tx.get_status_display }}{% endif %}
+                  </span>
+                </td>
+                <td class="px-6 py-4 text-right">
+                  <span class="text-xs text-on-surface-variant">{{ tx.payment_method }}</span>
+                </td>
+              </tr>
+              {% empty %}
+              <tr><td colspan="5" class="px-6 py-12 text-center text-on-surface-variant text-sm">No transactions yet</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right: Security + Inventory Health -->
+    <div class="space-y-8">
+      <!-- Audit Log -->
+      <div class="sculpted-card p-6 rounded-[2rem] bg-inverse-surface">
+        <h4 class="text-inverse-on-surface font-sans font-bold text-lg mb-6">Security & Audit</h4>
+        <div class="space-y-5">
+          {% for log in audit_logs %}
+          <div class="flex gap-3 relative">
+            <div class="flex-shrink-0 w-8 h-8 rounded-xl bg-white/10 flex items-center justify-center text-xs font-bold text-inverse-on-surface">
+              {{ log.actor_name|first|upper }}
+            </div>
+            <div class="flex-1 min-w-0">
+              <div class="flex justify-between items-start">
+                <p class="text-xs font-bold text-inverse-on-surface truncate">{{ log.actor_name }}</p>
+                <span class="text-[10px] text-inverse-on-surface/40 whitespace-nowrap ml-2">{{ log.created_at|timesince }} ago</span>
+              </div>
+              <p class="text-[11px] text-inverse-on-surface/60 mt-0.5 line-clamp-1">{{ log.action }}</p>
+              <div class="mt-1.5 flex items-center gap-2">
+                <span class="px-2 py-0.5 rounded text-[8px] font-bold uppercase tracking-tighter {% if log.severity == 'critical' %}bg-tertiary text-white{% elif log.severity == 'warning' %}bg-yellow-600 text-white{% else %}bg-green-600 text-white{% endif %}">
+                  {{ log.severity }}
+                </span>
+                {% if log.impact %}<span class="text-[8px] text-inverse-on-surface/30 font-mono italic truncate">{{ log.impact }}</span>{% endif %}
+              </div>
+            </div>
+          </div>
+          {% empty %}
+          <p class="text-inverse-on-surface/40 text-xs text-center py-4">No audit logs yet</p>
+          {% endfor %}
+        </div>
+        <a href="{% url 'admin_audit' %}" class="w-full mt-6 py-3 rounded-2xl bg-white/5 hover:bg-white/10 text-inverse-on-surface text-xs font-bold transition-all border border-white/10 flex items-center justify-center">
+          Full Security Report
+        </a>
+      </div>
+
+      <!-- Inventory Health -->
+      <div class="sculpted-card p-6 rounded-[2rem]">
+        <div class="flex items-center justify-between mb-5">
+          <h4 class="font-sans font-bold text-lg">Inventory Health</h4>
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-tertiary" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+        </div>
+        {% for flavor in top_flavors %}
+        <div class="p-4 bg-surface-container-high rounded-2xl border border-outline-variant/10 mb-3">
+          <div class="flex justify-between items-center mb-2">
+            <span class="text-xs font-bold text-on-surface truncate">{{ flavor.name }}</span>
+            <span class="text-[10px] font-bold text-primary px-2 py-0.5 bg-primary/10 rounded-full ml-2 whitespace-nowrap">{{ flavor.stock }} L left</span>
+          </div>
+          <div class="h-1.5 w-full bg-surface-container rounded-full overflow-hidden">
+            <div class="h-full rounded-full {% if flavor.status == 'low' or flavor.status == 'out' %}bg-tertiary{% else %}bg-primary{% endif %}"
+                 style="width:{{ flavor.stock_percentage }}%"></div>
+          </div>
+        </div>
+        {% empty %}
+        <p class="text-on-surface-variant text-sm text-center py-4">No flavors in inventory</p>
+        {% endfor %}
+        <a href="{% url 'admin_inventory' %}" class="w-full mt-2 py-3 rounded-2xl bg-surface-container-high hover:bg-surface-container-highest text-on-surface text-xs font-bold transition-all flex items-center justify-center">
+          Manage Inventory →
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+const monthlyData = {{ monthly_data|safe }};
+
+const ctx = document.getElementById('revenueChart').getContext('2d');
+new Chart(ctx, {
+  type: 'bar',
+  data: {
+    labels: monthlyData.map(d => d.date),
+    datasets: [{
+      label: 'Revenue (KSh)',
+      data: monthlyData.map(d => d.revenue),
+      backgroundColor: 'rgba(142,78,20,0.15)',
+      borderColor: '#8e4e14',
+      borderWidth: 2,
+      borderRadius: 8,
+      borderSkipped: false,
+    }]
+  },
+  options: {
+    responsive: true,
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        callbacks: {
+          label: ctx => `KSh ${ctx.raw.toLocaleString()}`
+        }
+      }
+    },
+    scales: {
+      y: {
+        beginAtZero: true,
+        grid: { color: 'rgba(0,0,0,0.05)' },
+        ticks: { callback: v => `KSh ${v.toLocaleString()}` }
+      },
+      x: { grid: { display: false } }
+    }
+  }
+});
+</script>
+{% endblock %}

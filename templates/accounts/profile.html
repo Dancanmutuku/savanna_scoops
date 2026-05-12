@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+{% block title %}My Profile – Savanna Scoops{% endblock %}
+
+{% block content %}
+{% include 'partials/customer_header.html' %}
+
+<main class="min-h-screen pt-24 pb-16" style="background: var(--color-surface);">
+  <div class="max-w-2xl mx-auto px-4">
+    <h1 class="text-4xl font-bold mb-8" style="font-family:'Playfair Display',serif; color:var(--color-dark);">My Profile</h1>
+
+    <div class="sculpted-card p-8 mb-6">
+      <div class="flex items-center gap-6 mb-8">
+        <div class="w-20 h-20 rounded-full flex items-center justify-center text-3xl font-bold text-white"
+          style="background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));">
+          {{ user.first_name|first|default:user.email|first|upper }}
+        </div>
+        <div>
+          <h2 class="text-2xl font-bold" style="color:var(--color-dark);">
+            {{ user.first_name }} {{ user.last_name }}
+          </h2>
+          <p class="text-gray-500">{{ user.email }}</p>
+          <p class="text-xs text-gray-400 mt-1">Member since {{ user.date_joined|date:"M Y" }}</p>
+        </div>
+      </div>
+
+      <form method="post" class="space-y-5">
+        {% csrf_token %}
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-semibold text-gray-700 mb-1">First Name</label>
+            <input type="text" name="first_name" value="{{ user.first_name }}"
+              class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-orange-400">
+          </div>
+          <div>
+            <label class="block text-sm font-semibold text-gray-700 mb-1">Last Name</label>
+            <input type="text" name="last_name" value="{{ user.last_name }}"
+              class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-orange-400">
+          </div>
+        </div>
+        <div>
+          <label class="block text-sm font-semibold text-gray-700 mb-1">Email</label>
+          <input type="email" value="{{ user.email }}" disabled
+            class="w-full border border-gray-100 rounded-xl px-4 py-3 text-sm bg-gray-50 text-gray-400">
+        </div>
+        <button type="submit" class="w-full py-4 rounded-2xl font-bold text-white transition-all hover:opacity-90"
+          style="background: var(--color-primary);">
+          Save Changes
+        </button>
+      </form>
+    </div>
+
+    <!-- Quick Links -->
+    <div class="grid grid-cols-2 gap-4">
+      <a href="{% url 'my_orders' %}" class="sculpted-card p-6 flex items-center gap-4 hover:scale-105 transition-transform">
+        <span class="text-3xl">📦</span>
+        <div>
+          <p class="font-bold text-gray-800">My Orders</p>
+          <p class="text-xs text-gray-500">View order history</p>
+        </div>
+      </a>
+      <a href="{% url 'tracking' %}" class="sculpted-card p-6 flex items-center gap-4 hover:scale-105 transition-transform">
+        <span class="text-3xl">🚚</span>
+        <div>
+          <p class="font-bold text-gray-800">Track Order</p>
+          <p class="text-xs text-gray-500">Live delivery status</p>
+        </div>
+      </a>
+    </div>
+  </div>
+</main>
+{% endblock %}
