@@ -12,6 +12,7 @@ This project includes:
 
 - `render.yaml`
 - `Procfile`
+- `build.sh`
 - production-ready static file settings
 - `DATABASE_URL` support for Postgres
 
@@ -42,5 +43,5 @@ This project includes:
 ### Notes
 
 - The app uses SQLite locally and Postgres automatically when `DATABASE_URL` is present.
-- Static files are collected during the Render build step.
+- `build.sh` installs dependencies and collects static files during the Render build step.
 - Database migrations run in the Render start command.

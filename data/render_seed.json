@@ -1,0 +1,1474 @@
+[
+{
+  "model": "auth.user",
+  "fields": {
+    "password": "pbkdf2_sha256$720000$cGrR50fBdUiYxMKIqeHNF5$aykgNHJJ6qgUIQ/2jroLrPyqgAsfoxF+wsqSTbZ0UU0=",
+    "last_login": "2026-05-12T13:06:47.379Z",
+    "is_superuser": true,
+    "username": "admin",
+    "first_name": "Admin",
+    "last_name": "Scoops",
+    "email": "admin@savanascoops.co.ke",
+    "is_staff": true,
+    "is_active": true,
+    "date_joined": "2026-05-11T10:21:51.798Z",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "auth.user",
+  "fields": {
+    "password": "pbkdf2_sha256$720000$wfp3Wq7TMioQZtY4S1xPKf$WKYfJIpr6rCUxO7Rglp9MnbKC/PT2asOwXa6RRJKT9A=",
+    "last_login": "2026-05-12T06:06:13.944Z",
+    "is_superuser": false,
+    "username": "dancanmutuku7@gmail.com",
+    "first_name": "Dancan",
+    "last_name": "Mutuku",
+    "email": "dancanmutuku7@gmail.com",
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2026-05-12T06:06:13.449Z",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "auth.user",
+  "fields": {
+    "password": "pbkdf2_sha256$720000$Vb3iFqraVpNABYJbmzhwV1$SukJkpDXi/MreYBnoNkndmBQBITrSVBUMWb0Qmbchbs=",
+    "last_login": "2026-05-12T07:42:42.450Z",
+    "is_superuser": false,
+    "username": "customer",
+    "first_name": "Jane",
+    "last_name": "Customer",
+    "email": "customer@savanascoops.co.ke",
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2026-05-12T06:25:30.965Z",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "auth.user",
+  "fields": {
+    "password": "pbkdf2_sha256$720000$UBjcmDGX0pGWV4m83lqXZR$NKH6UPkF8xXyMn8MFXaaQZrt6sW7boRuJeawxVzYT+w=",
+    "last_login": "2026-05-12T13:06:36.403Z",
+    "is_superuser": false,
+    "username": "mutukudancan6@gmail.com",
+    "first_name": "Dancan",
+    "last_name": "Mutuku",
+    "email": "mutukudancan6@gmail.com",
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2026-05-12T06:57:59.847Z",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "auth.user",
+  "fields": {
+    "password": "!IH0zsvnPVyY9I6gnlrLsDaCjrvYSmO4HnYdh0iTs",
+    "last_login": "2026-05-12T12:22:05.535Z",
+    "is_superuser": false,
+    "username": "mutuku",
+    "first_name": "MUTUKU",
+    "last_name": "DANCAN",
+    "email": "2205905@students.kcau.ac.ke",
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2026-05-12T12:22:05.481Z",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "sites.site",
+  "fields": {
+    "domain": "localhost:8000",
+    "name": "Savanna Scoops"
+  }
+},
+{
+  "model": "account.emailaddress",
+  "pk": 1,
+  "fields": {
+    "user": [
+      "mutuku"
+    ],
+    "email": "2205905@students.kcau.ac.ke",
+    "verified": true,
+    "primary": true
+  }
+},
+{
+  "model": "socialaccount.socialaccount",
+  "pk": 1,
+  "fields": {
+    "user": [
+      "mutukudancan6@gmail.com"
+    ],
+    "provider": "google",
+    "uid": "112669039658578152073",
+    "last_login": "2026-05-12T13:06:36.370Z",
+    "date_joined": "2026-05-12T12:21:07.081Z",
+    "extra_data": {
+      "iss": "https://accounts.google.com",
+      "azp": "574046957522-42nvr722fjl3i1225nder3f2h6r2cdae.apps.googleusercontent.com",
+      "aud": "574046957522-42nvr722fjl3i1225nder3f2h6r2cdae.apps.googleusercontent.com",
+      "sub": "112669039658578152073",
+      "email": "mutukudancan6@gmail.com",
+      "email_verified": true,
+      "at_hash": "cbFv_zntbw_AOSCcTYmjYw",
+      "name": "Dancan mutuku",
+      "picture": "https://lh3.googleusercontent.com/a/ACg8ocI9Pq2x6GyuZIaV65rLgritja9sGC1Wn0HZoaIGGfdV2HVONCeZeQ=s96-c",
+      "given_name": "Dancan",
+      "family_name": "mutuku",
+      "iat": 1778591196,
+      "exp": 1778594796
+    }
+  }
+},
+{
+  "model": "socialaccount.socialaccount",
+  "pk": 2,
+  "fields": {
+    "user": [
+      "mutuku"
+    ],
+    "provider": "google",
+    "uid": "106423736823795672932",
+    "last_login": "2026-05-12T12:22:05.498Z",
+    "date_joined": "2026-05-12T12:22:05.498Z",
+    "extra_data": {
+      "iss": "https://accounts.google.com",
+      "azp": "574046957522-42nvr722fjl3i1225nder3f2h6r2cdae.apps.googleusercontent.com",
+      "aud": "574046957522-42nvr722fjl3i1225nder3f2h6r2cdae.apps.googleusercontent.com",
+      "sub": "106423736823795672932",
+      "hd": "students.kcau.ac.ke",
+      "email": "2205905@students.kcau.ac.ke",
+      "email_verified": true,
+      "at_hash": "A-_736i5cNfjB19ZOdOqyw",
+      "name": "MUTUKU DANCAN",
+      "picture": "https://lh3.googleusercontent.com/a/ACg8ocKlUGTDIYZTUlcL4WpNLrRhbeXIRkopJrNPb7w4sd2Ft80Rqw=s96-c",
+      "given_name": "MUTUKU",
+      "family_name": "DANCAN",
+      "iat": 1778588525,
+      "exp": 1778592125
+    }
+  }
+},
+{
+  "model": "store.category",
+  "pk": 1,
+  "fields": {
+    "name": "Classic",
+    "slug": "classic",
+    "description": "Timeless, beloved flavors",
+    "icon": "🍦"
+  }
+},
+{
+  "model": "store.category",
+  "pk": 2,
+  "fields": {
+    "name": "Fruity",
+    "slug": "fruity",
+    "description": "Fresh fruit bursts",
+    "icon": "🍓"
+  }
+},
+{
+  "model": "store.category",
+  "pk": 3,
+  "fields": {
+    "name": "Sorbet & Dairy-Free",
+    "slug": "sorbet",
+    "description": "Vegan-friendly options",
+    "icon": "🌱"
+  }
+},
+{
+  "model": "store.category",
+  "pk": 4,
+  "fields": {
+    "name": "Premium",
+    "slug": "premium",
+    "description": "Chef's special selections",
+    "icon": "✨"
+  }
+},
+{
+  "model": "store.flavor",
+  "pk": 1,
+  "fields": {
+    "name": "Kenyan Dark Chocolate",
+    "slug": "kenyan-dark-chocolate",
+    "description": "Rich single-origin dark chocolate from Mount Kenya estates, slow-churned with a hint of espresso and sea salt. Velvety smooth finish.",
+    "price": "450.00",
+    "image_url": "https://images.unsplash.com/photo-1563805042-7684c019e1cb?auto=format&fit=crop&q=80&w=600",
+    "image": "",
+    "category": 1,
+    "stock": 180,
+    "min_stock": 20,
+    "status": "high",
+    "rating": "4.9",
+    "total_sales": 342,
+    "color_hex": "#3D1A0A",
+    "is_active": true,
+    "is_featured": true,
+    "is_dairy_free": false,
+    "allergens": "",
+    "created_at": "2026-05-11T10:21:51.640Z",
+    "updated_at": "2026-05-12T06:25:30.391Z"
+  }
+},
+{
+  "model": "store.flavor",
+  "pk": 2,
+  "fields": {
+    "name": "Mango Maziwa",
+    "slug": "mango-maziwa",
+    "description": "Fresh Malindi mangoes blended with creamy whole milk and a dash of cardamom. Tastes like a Kenyan summer afternoon.",
+    "price": "380.00",
+    "image_url": "https://images.unsplash.com/photo-1501443762994-82bd5dace89a?auto=format&fit=crop&q=80&w=600",
+    "image": "",
+    "category": 2,
+    "stock": 150,
+    "min_stock": 20,
+    "status": "high",
+    "rating": "4.8",
+    "total_sales": 289,
+    "color_hex": "#FFA827",
+    "is_active": true,
+    "is_featured": true,
+    "is_dairy_free": false,
+    "allergens": "",
+    "created_at": "2026-05-11T10:21:51.648Z",
+    "updated_at": "2026-05-12T06:25:30.403Z"
+  }
+},
+{
+  "model": "store.flavor",
+  "pk": 3,
+  "fields": {
+    "name": "Passion & Hibiscus Sorbet",
+    "slug": "passion-hibiscus-sorbet",
+    "description": "Zero-dairy sorbet of wild passion fruit and dried hibiscus flowers. Tangy, floral, and utterly refreshing.",
+    "price": "350.00",
+    "image_url": "https://images.unsplash.com/photo-1488900128323-21503983a07e?auto=format&fit=crop&q=80&w=600",
+    "image": "",
+    "category": 3,
+    "stock": 120,
+    "min_stock": 20,
+    "status": "high",
+    "rating": "4.7",
+    "total_sales": 215,
+    "color_hex": "#E91E8C",
+    "is_active": true,
+    "is_featured": true,
+    "is_dairy_free": true,
+    "allergens": "",
+    "created_at": "2026-05-11T10:21:51.656Z",
+    "updated_at": "2026-05-12T06:25:30.414Z"
+  }
+},
+{
+  "model": "store.flavor",
+  "pk": 4,
+  "fields": {
+    "name": "Vanilla Bean Royale",
+    "slug": "vanilla-bean-royale",
+    "description": "Tahitian vanilla beans steeped in fresh cream overnight. Classic, pure, and utterly indulgent.",
+    "price": "420.00",
+    "image_url": "https://images.unsplash.com/photo-1570197788417-0e82375c9371?auto=format&fit=crop&q=80&w=600",
+    "image": "",
+    "category": 1,
+    "stock": 200,
+    "min_stock": 20,
+    "status": "high",
+    "rating": "4.6",
+    "total_sales": 178,
+    "color_hex": "#FFF8DC",
+    "is_active": true,
+    "is_featured": false,
+    "is_dairy_free": false,
+    "allergens": "",
+    "created_at": "2026-05-11T10:21:51.663Z",
+    "updated_at": "2026-05-12T06:25:30.423Z"
+  }
+},
+{
+  "model": "store.flavor",
+  "pk": 5,
+  "fields": {
+    "name": "Salted Caramel Savanna",
+    "slug": "salted-caramel-savanna",
+    "description": "House-made caramel with Maldon sea salt, swirled through Madagascar cream. Our best-seller since 2015.",
+    "price": "1.00",
+    "image_url": "https://images.unsplash.com/photo-1497034825429-c343d7c6a68f?auto=format&fit=crop&q=80&w=600",
+    "image": "",
+    "category": 1,
+    "stock": 160,
+    "min_stock": 20,
+    "status": "high",
+    "rating": "4.9",
+    "total_sales": 410,
+    "color_hex": "#C68642",
+    "is_active": true,
+    "is_featured": true,
+    "is_dairy_free": false,
+    "allergens": "",
+    "created_at": "2026-05-11T10:21:51.671Z",
+    "updated_at": "2026-05-12T06:35:19.997Z"
+  }
+},
+{
+  "model": "store.flavor",
+  "pk": 6,
+  "fields": {
+    "name": "Baobab & Coconut",
+    "slug": "baobab-coconut",
+    "description": "Baobab superfruit powder meets creamy coconut milk for a dairy-free tropical dream with a subtle citrus note.",
+    "price": "400.00",
+    "image_url": "https://images.unsplash.com/photo-1516684732162-798a0062be99?auto=format&fit=crop&q=80&w=600",
+    "image": "",
+    "category": 3,
+    "stock": 90,
+    "min_stock": 20,
+    "status": "high",
+    "rating": "4.5",
+    "total_sales": 134,
+    "color_hex": "#D4C5A9",
+    "is_active": true,
+    "is_featured": false,
+    "is_dairy_free": true,
+    "allergens": "",
+    "created_at": "2026-05-11T10:21:51.680Z",
+    "updated_at": "2026-05-12T06:25:30.440Z"
+  }
+},
+{
+  "model": "store.flavor",
+  "pk": 7,
+  "fields": {
+    "name": "Strawberry Masai",
+    "slug": "strawberry-masai",
+    "description": "Locally grown Limuru strawberries blended with a drizzle of raw acacia honey. Fresh, bright, and seasonal.",
+    "price": "360.00",
+    "image_url": "https://images.unsplash.com/photo-1633933358116-a27b902fad35?auto=format&fit=crop&q=80&w=600",
+    "image": "",
+    "category": 2,
+    "stock": 140,
+    "min_stock": 20,
+    "status": "high",
+    "rating": "4.7",
+    "total_sales": 198,
+    "color_hex": "#FF6B8A",
+    "is_active": true,
+    "is_featured": false,
+    "is_dairy_free": false,
+    "allergens": "",
+    "created_at": "2026-05-11T10:21:51.686Z",
+    "updated_at": "2026-05-12T06:25:30.449Z"
+  }
+},
+{
+  "model": "store.flavor",
+  "pk": 8,
+  "fields": {
+    "name": "Matcha Forest",
+    "slug": "matcha-forest",
+    "description": "Ceremonial-grade Japanese matcha blended with sweetened condensed milk. Earthy, complex, beautiful.",
+    "price": "520.00",
+    "image_url": "https://images.unsplash.com/photo-1582716401301-b2407dc7563d?auto=format&fit=crop&q=80&w=600",
+    "image": "",
+    "category": 4,
+    "stock": 75,
+    "min_stock": 20,
+    "status": "high",
+    "rating": "4.8",
+    "total_sales": 167,
+    "color_hex": "#6D8B5F",
+    "is_active": true,
+    "is_featured": true,
+    "is_dairy_free": false,
+    "allergens": "",
+    "created_at": "2026-05-11T10:21:51.694Z",
+    "updated_at": "2026-05-12T06:25:30.459Z"
+  }
+},
+{
+  "model": "store.flavor",
+  "pk": 9,
+  "fields": {
+    "name": "Lemon Zest Sherbet",
+    "slug": "lemon-zest-sherbet",
+    "description": "Bright East African lemons, a pinch of turmeric, and cane sugar make this a zingy palate cleanser.",
+    "price": "330.00",
+    "image_url": "https://images.unsplash.com/photo-1557142046-c704a3adf364?auto=format&fit=crop&q=80&w=600",
+    "image": "",
+    "category": 3,
+    "stock": 110,
+    "min_stock": 20,
+    "status": "high",
+    "rating": "4.4",
+    "total_sales": 112,
+    "color_hex": "#FFF176",
+    "is_active": true,
+    "is_featured": false,
+    "is_dairy_free": true,
+    "allergens": "",
+    "created_at": "2026-05-11T10:21:51.702Z",
+    "updated_at": "2026-05-12T06:25:30.468Z"
+  }
+},
+{
+  "model": "store.flavor",
+  "pk": 10,
+  "fields": {
+    "name": "Black Sesame Midnight",
+    "slug": "black-sesame-midnight",
+    "description": "Toasted black sesame paste swirled through premium cream. Deep, nutty, and hauntingly beautiful.",
+    "price": "550.00",
+    "image_url": "https://images.unsplash.com/photo-1563699902328-8b82f9929c8e?auto=format&fit=crop&q=80&w=600",
+    "image": "",
+    "category": 4,
+    "stock": 60,
+    "min_stock": 20,
+    "status": "high",
+    "rating": "4.6",
+    "total_sales": 89,
+    "color_hex": "#1A1A2E",
+    "is_active": true,
+    "is_featured": false,
+    "is_dairy_free": false,
+    "allergens": "",
+    "created_at": "2026-05-11T10:21:51.710Z",
+    "updated_at": "2026-05-12T06:25:30.479Z"
+  }
+},
+{
+  "model": "store.flavor",
+  "pk": 11,
+  "fields": {
+    "name": "Avocado Dream",
+    "slug": "avocado-dream",
+    "description": "Creamy Kenyan Hass avocado with a squeeze of lime and condensed milk. Rich, lush, and utterly unique.",
+    "price": "440.00",
+    "image_url": "https://images.unsplash.com/photo-1545249390-6bdfa286032f?auto=format&fit=crop&q=80&w=600",
+    "image": "",
+    "category": 4,
+    "stock": 85,
+    "min_stock": 20,
+    "status": "high",
+    "rating": "4.5",
+    "total_sales": 102,
+    "color_hex": "#6DB356",
+    "is_active": true,
+    "is_featured": false,
+    "is_dairy_free": false,
+    "allergens": "",
+    "created_at": "2026-05-11T10:21:51.717Z",
+    "updated_at": "2026-05-12T06:25:30.490Z"
+  }
+},
+{
+  "model": "store.flavor",
+  "pk": 12,
+  "fields": {
+    "name": "Rose & Cardamom Kulfi",
+    "slug": "rose-cardamom-kulfi",
+    "description": "Inspired by South Asian kulfi — dense, slow-frozen with rose water, pistachios, and cardamom. A cultural gem.",
+    "price": "500.00",
+    "image_url": "https://images.unsplash.com/photo-1551024601-bec78aea704b?auto=format&fit=crop&q=80&w=600",
+    "image": "",
+    "category": 4,
+    "stock": 70,
+    "min_stock": 20,
+    "status": "high",
+    "rating": "4.9",
+    "total_sales": 145,
+    "color_hex": "#FFACC7",
+    "is_active": true,
+    "is_featured": true,
+    "is_dairy_free": false,
+    "allergens": "",
+    "created_at": "2026-05-11T10:21:51.723Z",
+    "updated_at": "2026-05-12T06:25:30.499Z"
+  }
+},
+{
+  "model": "store.sitesettings",
+  "pk": 1,
+  "fields": {
+    "store_name": "Savanna Scoops",
+    "tagline": "Hand-Churned Since 2012",
+    "address": "The Hub Karen, Nairobi",
+    "phone": "+254 700 123 456",
+    "email": "hello@savanascoops.co.ke",
+    "delivery_fee": "1.00",
+    "free_delivery_threshold": "2000.00",
+    "hero_image_url": "https://images.unsplash.com/photo-1549395156-e0c1fe6fc7a5?auto=format&fit=crop&q=80&w=2000",
+    "instagram_url": "",
+    "facebook_url": "",
+    "twitter_url": ""
+  }
+},
+{
+  "model": "orders.order",
+  "pk": 1,
+  "fields": {
+    "order_number": "SS-29F32C06",
+    "user": null,
+    "customer_name": "Customer 1",
+    "customer_email": "customer1@example.com",
+    "customer_phone": "+254763932327",
+    "delivery_address": "Lavington Nairobi",
+    "delivery_instructions": "",
+    "subtotal": "510.00",
+    "delivery_fee": "150.00",
+    "total": "1123.00",
+    "status": "confirmed",
+    "payment_method": "M-Pesa",
+    "payment_status": "paid",
+    "mpesa_receipt": "",
+    "notes": "",
+    "created_at": "2026-05-11T10:21:51.990Z",
+    "updated_at": "2026-05-11T10:21:51.990Z"
+  }
+},
+{
+  "model": "orders.order",
+  "pk": 2,
+  "fields": {
+    "order_number": "SS-E9F26838",
+    "user": null,
+    "customer_name": "Customer 2",
+    "customer_email": "customer2@example.com",
+    "customer_phone": "+254779312199",
+    "delivery_address": "Lavington Nairobi",
+    "delivery_instructions": "",
+    "subtotal": "1355.00",
+    "delivery_fee": "150.00",
+    "total": "1424.00",
+    "status": "confirmed",
+    "payment_method": "M-Pesa",
+    "payment_status": "paid",
+    "mpesa_receipt": "",
+    "notes": "",
+    "created_at": "2026-05-11T10:21:52.002Z",
+    "updated_at": "2026-05-11T10:21:52.002Z"
+  }
+},
+{
+  "model": "orders.order",
+  "pk": 3,
+  "fields": {
+    "order_number": "SS-2886A24E",
+    "user": null,
+    "customer_name": "Customer 3",
+    "customer_email": "customer3@example.com",
+    "customer_phone": "+254711391587",
+    "delivery_address": "Karen Nairobi",
+    "delivery_instructions": "",
+    "subtotal": "1243.00",
+    "delivery_fee": "150.00",
+    "total": "1532.00",
+    "status": "delivered",
+    "payment_method": "M-Pesa",
+    "payment_status": "pending",
+    "mpesa_receipt": "",
+    "notes": "",
+    "created_at": "2026-05-11T10:21:52.014Z",
+    "updated_at": "2026-05-11T10:21:52.014Z"
+  }
+},
+{
+  "model": "orders.order",
+  "pk": 4,
+  "fields": {
+    "order_number": "SS-D3B498E1",
+    "user": null,
+    "customer_name": "Customer 4",
+    "customer_email": "customer4@example.com",
+    "customer_phone": "+254748562565",
+    "delivery_address": "Kilimani Nairobi",
+    "delivery_instructions": "",
+    "subtotal": "1591.00",
+    "delivery_fee": "150.00",
+    "total": "1960.00",
+    "status": "delivered",
+    "payment_method": "M-Pesa",
+    "payment_status": "pending",
+    "mpesa_receipt": "",
+    "notes": "",
+    "created_at": "2026-05-11T10:21:52.026Z",
+    "updated_at": "2026-05-11T10:21:52.026Z"
+  }
+},
+{
+  "model": "orders.order",
+  "pk": 5,
+  "fields": {
+    "order_number": "SS-029FF222",
+    "user": null,
+    "customer_name": "Customer 5",
+    "customer_email": "customer5@example.com",
+    "customer_phone": "+254771553780",
+    "delivery_address": "Lavington Nairobi",
+    "delivery_instructions": "",
+    "subtotal": "1569.00",
+    "delivery_fee": "150.00",
+    "total": "1351.00",
+    "status": "delivered",
+    "payment_method": "M-Pesa",
+    "payment_status": "paid",
+    "mpesa_receipt": "",
+    "notes": "",
+    "created_at": "2026-05-11T10:21:52.036Z",
+    "updated_at": "2026-05-11T10:21:52.036Z"
+  }
+},
+{
+  "model": "orders.order",
+  "pk": 6,
+  "fields": {
+    "order_number": "SS-F45F79AF",
+    "user": [
+      "dancanmutuku7@gmail.com"
+    ],
+    "customer_name": "Dancan Mutuku",
+    "customer_email": "dancanmutuku7@gmail.com",
+    "customer_phone": "+2540726263888",
+    "delivery_address": "166",
+    "delivery_instructions": "",
+    "subtotal": "450.00",
+    "delivery_fee": "150.00",
+    "total": "600.00",
+    "status": "pending",
+    "payment_method": "M-Pesa",
+    "payment_status": "pending",
+    "mpesa_receipt": "",
+    "notes": "",
+    "created_at": "2026-05-12T06:06:43.004Z",
+    "updated_at": "2026-05-12T06:06:43.004Z"
+  }
+},
+{
+  "model": "orders.order",
+  "pk": 7,
+  "fields": {
+    "order_number": "SS-36B8ED5C",
+    "user": [
+      "admin"
+    ],
+    "customer_name": "Admin Scoops",
+    "customer_email": "admin@savanascoops.co.ke",
+    "customer_phone": "+2540726263888",
+    "delivery_address": "166",
+    "delivery_instructions": "",
+    "subtotal": "420.00",
+    "delivery_fee": "150.00",
+    "total": "570.00",
+    "status": "pending",
+    "payment_method": "M-Pesa",
+    "payment_status": "pending",
+    "mpesa_receipt": "",
+    "notes": "",
+    "created_at": "2026-05-12T06:33:19.140Z",
+    "updated_at": "2026-05-12T06:33:19.140Z"
+  }
+},
+{
+  "model": "orders.order",
+  "pk": 8,
+  "fields": {
+    "order_number": "SS-0533426D",
+    "user": [
+      "admin"
+    ],
+    "customer_name": "Admin Scoops",
+    "customer_email": "admin@savanascoops.co.ke",
+    "customer_phone": "+2540726263888",
+    "delivery_address": "166",
+    "delivery_instructions": "",
+    "subtotal": "420.00",
+    "delivery_fee": "150.00",
+    "total": "570.00",
+    "status": "pending",
+    "payment_method": "M-Pesa",
+    "payment_status": "pending",
+    "mpesa_receipt": "",
+    "notes": "",
+    "created_at": "2026-05-12T06:33:38.738Z",
+    "updated_at": "2026-05-12T06:33:38.738Z"
+  }
+},
+{
+  "model": "orders.order",
+  "pk": 9,
+  "fields": {
+    "order_number": "SS-556EB8A6",
+    "user": [
+      "admin"
+    ],
+    "customer_name": "Admin Scoops",
+    "customer_email": "admin@savanascoops.co.ke",
+    "customer_phone": "+254726263888",
+    "delivery_address": "166",
+    "delivery_instructions": "",
+    "subtotal": "420.00",
+    "delivery_fee": "150.00",
+    "total": "570.00",
+    "status": "pending",
+    "payment_method": "M-Pesa",
+    "payment_status": "pending",
+    "mpesa_receipt": "",
+    "notes": "",
+    "created_at": "2026-05-12T06:33:46.372Z",
+    "updated_at": "2026-05-12T06:33:46.372Z"
+  }
+},
+{
+  "model": "orders.order",
+  "pk": 10,
+  "fields": {
+    "order_number": "SS-5FF282AB",
+    "user": [
+      "admin"
+    ],
+    "customer_name": "Admin Scoops",
+    "customer_email": "admin@savanascoops.co.ke",
+    "customer_phone": "+2540726263888",
+    "delivery_address": "166",
+    "delivery_instructions": "",
+    "subtotal": "1.00",
+    "delivery_fee": "150.00",
+    "total": "151.00",
+    "status": "pending",
+    "payment_method": "M-Pesa",
+    "payment_status": "pending",
+    "mpesa_receipt": "",
+    "notes": "",
+    "created_at": "2026-05-12T06:35:45.345Z",
+    "updated_at": "2026-05-12T06:35:45.345Z"
+  }
+},
+{
+  "model": "orders.order",
+  "pk": 11,
+  "fields": {
+    "order_number": "SS-5767F3B9",
+    "user": [
+      "admin"
+    ],
+    "customer_name": "Admin Scoops",
+    "customer_email": "admin@savanascoops.co.ke",
+    "customer_phone": "+2540726263888",
+    "delivery_address": "166",
+    "delivery_instructions": "",
+    "subtotal": "1.00",
+    "delivery_fee": "1.00",
+    "total": "2.00",
+    "status": "pending",
+    "payment_method": "M-Pesa",
+    "payment_status": "pending",
+    "mpesa_receipt": "",
+    "notes": "",
+    "created_at": "2026-05-12T06:36:34.401Z",
+    "updated_at": "2026-05-12T06:36:34.401Z"
+  }
+},
+{
+  "model": "orders.order",
+  "pk": 12,
+  "fields": {
+    "order_number": "SS-813F44BA",
+    "user": [
+      "admin"
+    ],
+    "customer_name": "Admin Scoops",
+    "customer_email": "admin@savanascoops.co.ke",
+    "customer_phone": "+254726263888",
+    "delivery_address": "166",
+    "delivery_instructions": "",
+    "subtotal": "1.00",
+    "delivery_fee": "1.00",
+    "total": "2.00",
+    "status": "pending",
+    "payment_method": "M-Pesa",
+    "payment_status": "pending",
+    "mpesa_receipt": "",
+    "notes": "",
+    "created_at": "2026-05-12T06:36:43.850Z",
+    "updated_at": "2026-05-12T06:36:43.850Z"
+  }
+},
+{
+  "model": "orders.order",
+  "pk": 13,
+  "fields": {
+    "order_number": "SS-13142587",
+    "user": [
+      "admin"
+    ],
+    "customer_name": "Admin Scoops",
+    "customer_email": "admin@savanascoops.co.ke",
+    "customer_phone": "+254726263888",
+    "delivery_address": "166",
+    "delivery_instructions": "",
+    "subtotal": "1.00",
+    "delivery_fee": "1.00",
+    "total": "2.00",
+    "status": "confirmed",
+    "payment_method": "M-Pesa",
+    "payment_status": "paid",
+    "mpesa_receipt": "UECFO41110",
+    "notes": "",
+    "created_at": "2026-05-12T06:36:51.248Z",
+    "updated_at": "2026-05-12T06:37:03.311Z"
+  }
+},
+{
+  "model": "orders.order",
+  "pk": 15,
+  "fields": {
+    "order_number": "SS-2B828920",
+    "user": [
+      "mutukudancan6@gmail.com"
+    ],
+    "customer_name": "Dancan Mutuku",
+    "customer_email": "mutukudancan6@gmail.com",
+    "customer_phone": "+254726263888",
+    "delivery_address": "166",
+    "delivery_instructions": "",
+    "subtotal": "1.00",
+    "delivery_fee": "1.00",
+    "total": "2.00",
+    "status": "out_for_delivery",
+    "payment_method": "M-Pesa",
+    "payment_status": "paid",
+    "mpesa_receipt": "UECFO415DQ",
+    "notes": "",
+    "created_at": "2026-05-12T07:07:21.796Z",
+    "updated_at": "2026-05-12T07:09:46.862Z"
+  }
+},
+{
+  "model": "orders.orderitem",
+  "pk": 1,
+  "fields": {
+    "order": 1,
+    "flavor": 6,
+    "flavor_name": "Baobab & Coconut",
+    "price": "400.00",
+    "quantity": 2,
+    "subtotal": "800.00"
+  }
+},
+{
+  "model": "orders.orderitem",
+  "pk": 2,
+  "fields": {
+    "order": 2,
+    "flavor": 5,
+    "flavor_name": "Salted Caramel Savanna",
+    "price": "480.00",
+    "quantity": 1,
+    "subtotal": "480.00"
+  }
+},
+{
+  "model": "orders.orderitem",
+  "pk": 3,
+  "fields": {
+    "order": 3,
+    "flavor": 6,
+    "flavor_name": "Baobab & Coconut",
+    "price": "400.00",
+    "quantity": 1,
+    "subtotal": "400.00"
+  }
+},
+{
+  "model": "orders.orderitem",
+  "pk": 4,
+  "fields": {
+    "order": 4,
+    "flavor": 6,
+    "flavor_name": "Baobab & Coconut",
+    "price": "400.00",
+    "quantity": 2,
+    "subtotal": "800.00"
+  }
+},
+{
+  "model": "orders.orderitem",
+  "pk": 5,
+  "fields": {
+    "order": 5,
+    "flavor": 8,
+    "flavor_name": "Matcha Forest",
+    "price": "520.00",
+    "quantity": 3,
+    "subtotal": "1560.00"
+  }
+},
+{
+  "model": "orders.orderitem",
+  "pk": 6,
+  "fields": {
+    "order": 6,
+    "flavor": 1,
+    "flavor_name": "Kenyan Dark Chocolate",
+    "price": "450.00",
+    "quantity": 1,
+    "subtotal": "450.00"
+  }
+},
+{
+  "model": "orders.orderitem",
+  "pk": 7,
+  "fields": {
+    "order": 7,
+    "flavor": 4,
+    "flavor_name": "Vanilla Bean Royale",
+    "price": "420.00",
+    "quantity": 1,
+    "subtotal": "420.00"
+  }
+},
+{
+  "model": "orders.orderitem",
+  "pk": 8,
+  "fields": {
+    "order": 8,
+    "flavor": 4,
+    "flavor_name": "Vanilla Bean Royale",
+    "price": "420.00",
+    "quantity": 1,
+    "subtotal": "420.00"
+  }
+},
+{
+  "model": "orders.orderitem",
+  "pk": 9,
+  "fields": {
+    "order": 9,
+    "flavor": 4,
+    "flavor_name": "Vanilla Bean Royale",
+    "price": "420.00",
+    "quantity": 1,
+    "subtotal": "420.00"
+  }
+},
+{
+  "model": "orders.orderitem",
+  "pk": 10,
+  "fields": {
+    "order": 10,
+    "flavor": 5,
+    "flavor_name": "Salted Caramel Savanna",
+    "price": "1.00",
+    "quantity": 1,
+    "subtotal": "1.00"
+  }
+},
+{
+  "model": "orders.orderitem",
+  "pk": 11,
+  "fields": {
+    "order": 11,
+    "flavor": 5,
+    "flavor_name": "Salted Caramel Savanna",
+    "price": "1.00",
+    "quantity": 1,
+    "subtotal": "1.00"
+  }
+},
+{
+  "model": "orders.orderitem",
+  "pk": 12,
+  "fields": {
+    "order": 12,
+    "flavor": 5,
+    "flavor_name": "Salted Caramel Savanna",
+    "price": "1.00",
+    "quantity": 1,
+    "subtotal": "1.00"
+  }
+},
+{
+  "model": "orders.orderitem",
+  "pk": 13,
+  "fields": {
+    "order": 13,
+    "flavor": 5,
+    "flavor_name": "Salted Caramel Savanna",
+    "price": "1.00",
+    "quantity": 1,
+    "subtotal": "1.00"
+  }
+},
+{
+  "model": "orders.orderitem",
+  "pk": 14,
+  "fields": {
+    "order": 15,
+    "flavor": 5,
+    "flavor_name": "Salted Caramel Savanna",
+    "price": "1.00",
+    "quantity": 1,
+    "subtotal": "1.00"
+  }
+},
+{
+  "model": "orders.orderstatushistory",
+  "pk": 1,
+  "fields": {
+    "order": 6,
+    "status": "pending",
+    "note": "Order created, awaiting payment.",
+    "created_at": "2026-05-12T06:06:43.027Z",
+    "updated_by": null
+  }
+},
+{
+  "model": "orders.orderstatushistory",
+  "pk": 2,
+  "fields": {
+    "order": 7,
+    "status": "pending",
+    "note": "Order created, awaiting payment.",
+    "created_at": "2026-05-12T06:33:19.162Z",
+    "updated_by": null
+  }
+},
+{
+  "model": "orders.orderstatushistory",
+  "pk": 3,
+  "fields": {
+    "order": 8,
+    "status": "pending",
+    "note": "Order created, awaiting payment.",
+    "created_at": "2026-05-12T06:33:38.761Z",
+    "updated_by": null
+  }
+},
+{
+  "model": "orders.orderstatushistory",
+  "pk": 4,
+  "fields": {
+    "order": 9,
+    "status": "pending",
+    "note": "Order created, awaiting payment.",
+    "created_at": "2026-05-12T06:33:46.397Z",
+    "updated_by": null
+  }
+},
+{
+  "model": "orders.orderstatushistory",
+  "pk": 5,
+  "fields": {
+    "order": 10,
+    "status": "pending",
+    "note": "Order created, awaiting payment.",
+    "created_at": "2026-05-12T06:35:45.369Z",
+    "updated_by": null
+  }
+},
+{
+  "model": "orders.orderstatushistory",
+  "pk": 6,
+  "fields": {
+    "order": 11,
+    "status": "pending",
+    "note": "Order created, awaiting payment.",
+    "created_at": "2026-05-12T06:36:34.423Z",
+    "updated_by": null
+  }
+},
+{
+  "model": "orders.orderstatushistory",
+  "pk": 7,
+  "fields": {
+    "order": 12,
+    "status": "pending",
+    "note": "Order created, awaiting payment.",
+    "created_at": "2026-05-12T06:36:43.872Z",
+    "updated_by": null
+  }
+},
+{
+  "model": "orders.orderstatushistory",
+  "pk": 8,
+  "fields": {
+    "order": 13,
+    "status": "pending",
+    "note": "Order created, awaiting payment.",
+    "created_at": "2026-05-12T06:36:51.272Z",
+    "updated_by": null
+  }
+},
+{
+  "model": "orders.orderstatushistory",
+  "pk": 9,
+  "fields": {
+    "order": 13,
+    "status": "confirmed",
+    "note": "M-Pesa payment confirmed. Receipt: UECFO41110",
+    "created_at": "2026-05-12T06:37:03.322Z",
+    "updated_by": null
+  }
+},
+{
+  "model": "orders.orderstatushistory",
+  "pk": 11,
+  "fields": {
+    "order": 15,
+    "status": "pending",
+    "note": "Order created, awaiting payment.",
+    "created_at": "2026-05-12T07:07:21.832Z",
+    "updated_by": null
+  }
+},
+{
+  "model": "orders.orderstatushistory",
+  "pk": 12,
+  "fields": {
+    "order": 15,
+    "status": "confirmed",
+    "note": "M-Pesa payment confirmed. Receipt: UECFO415DQ",
+    "created_at": "2026-05-12T07:07:34.363Z",
+    "updated_by": null
+  }
+},
+{
+  "model": "payments.mpesatransaction",
+  "pk": 1,
+  "fields": {
+    "order": 9,
+    "merchant_request_id": "29ed-4881-b9d0-e76cc0adfd6e10603",
+    "checkout_request_id": "ws_CO_12052026093348143726263888",
+    "phone_number": "+254726263888",
+    "amount": "570.00",
+    "status": "failed",
+    "mpesa_receipt_number": "",
+    "result_code": 1032,
+    "result_desc": "Request Cancelled by user.",
+    "created_at": "2026-05-12T06:33:48.533Z",
+    "updated_at": "2026-05-12T06:34:01.858Z"
+  }
+},
+{
+  "model": "payments.mpesatransaction",
+  "pk": 2,
+  "fields": {
+    "order": 13,
+    "merchant_request_id": "fa8c-47b5-a1d7-ebaebbc78c2925917",
+    "checkout_request_id": "ws_CO_12052026093653130726263888",
+    "phone_number": "+254726263888",
+    "amount": "2.00",
+    "status": "success",
+    "mpesa_receipt_number": "UECFO41110",
+    "result_code": 0,
+    "result_desc": "The service request is processed successfully.",
+    "created_at": "2026-05-12T06:36:53.526Z",
+    "updated_at": "2026-05-12T06:37:03.296Z"
+  }
+},
+{
+  "model": "payments.mpesatransaction",
+  "pk": 3,
+  "fields": {
+    "order": 15,
+    "merchant_request_id": "29ed-4881-b9d0-e76cc0adfd6e11457",
+    "checkout_request_id": "ws_CO_12052026100723967726263888",
+    "phone_number": "+254726263888",
+    "amount": "2.00",
+    "status": "success",
+    "mpesa_receipt_number": "UECFO415DQ",
+    "result_code": 0,
+    "result_desc": "The service request is processed successfully.",
+    "created_at": "2026-05-12T07:07:24.359Z",
+    "updated_at": "2026-05-12T07:07:34.331Z"
+  }
+},
+{
+  "model": "inventory.inventoryitem",
+  "pk": 1,
+  "fields": {
+    "sku": "DRY-001",
+    "name": "Fresh Whole Milk",
+    "category": "dairy",
+    "description": "",
+    "current_stock": "150.00",
+    "min_stock": "50.00",
+    "max_stock": "500.00",
+    "unit": "Litres",
+    "unit_cost": "80.00",
+    "supplier": "",
+    "location": "Main Storeroom",
+    "is_active": true,
+    "created_at": "2026-05-11T10:21:51.731Z",
+    "updated_at": "2026-05-11T10:21:51.731Z"
+  }
+},
+{
+  "model": "inventory.inventoryitem",
+  "pk": 2,
+  "fields": {
+    "sku": "DRY-002",
+    "name": "Heavy Cream",
+    "category": "dairy",
+    "description": "",
+    "current_stock": "80.00",
+    "min_stock": "30.00",
+    "max_stock": "200.00",
+    "unit": "Litres",
+    "unit_cost": "250.00",
+    "supplier": "",
+    "location": "Main Storeroom",
+    "is_active": true,
+    "created_at": "2026-05-11T10:21:51.737Z",
+    "updated_at": "2026-05-11T10:21:51.737Z"
+  }
+},
+{
+  "model": "inventory.inventoryitem",
+  "pk": 3,
+  "fields": {
+    "sku": "DRY-003",
+    "name": "Condensed Milk",
+    "category": "dairy",
+    "description": "",
+    "current_stock": "60.00",
+    "min_stock": "20.00",
+    "max_stock": "150.00",
+    "unit": "Cans",
+    "unit_cost": "180.00",
+    "supplier": "",
+    "location": "Main Storeroom",
+    "is_active": true,
+    "created_at": "2026-05-11T10:21:51.743Z",
+    "updated_at": "2026-05-11T10:21:51.743Z"
+  }
+},
+{
+  "model": "inventory.inventoryitem",
+  "pk": 4,
+  "fields": {
+    "sku": "SWT-001",
+    "name": "Cane Sugar",
+    "category": "sweetener",
+    "description": "",
+    "current_stock": "200.00",
+    "min_stock": "50.00",
+    "max_stock": "500.00",
+    "unit": "Kg",
+    "unit_cost": "120.00",
+    "supplier": "",
+    "location": "Main Storeroom",
+    "is_active": true,
+    "created_at": "2026-05-11T10:21:51.749Z",
+    "updated_at": "2026-05-11T10:21:51.749Z"
+  }
+},
+{
+  "model": "inventory.inventoryitem",
+  "pk": 5,
+  "fields": {
+    "sku": "SWT-002",
+    "name": "Acacia Honey",
+    "category": "sweetener",
+    "description": "",
+    "current_stock": "25.00",
+    "min_stock": "10.00",
+    "max_stock": "60.00",
+    "unit": "Kg",
+    "unit_cost": "800.00",
+    "supplier": "",
+    "location": "Main Storeroom",
+    "is_active": true,
+    "created_at": "2026-05-11T10:21:51.755Z",
+    "updated_at": "2026-05-11T10:21:51.755Z"
+  }
+},
+{
+  "model": "inventory.inventoryitem",
+  "pk": 6,
+  "fields": {
+    "sku": "FLV-001",
+    "name": "Tahitian Vanilla Pods",
+    "category": "flavoring",
+    "description": "",
+    "current_stock": "200.00",
+    "min_stock": "80.00",
+    "max_stock": "400.00",
+    "unit": "Pods",
+    "unit_cost": "45.00",
+    "supplier": "",
+    "location": "Main Storeroom",
+    "is_active": true,
+    "created_at": "2026-05-11T10:21:51.761Z",
+    "updated_at": "2026-05-11T10:21:51.761Z"
+  }
+},
+{
+  "model": "inventory.inventoryitem",
+  "pk": 7,
+  "fields": {
+    "sku": "FLV-002",
+    "name": "Single-Origin Cocoa Powder",
+    "category": "flavoring",
+    "description": "",
+    "current_stock": "30.00",
+    "min_stock": "15.00",
+    "max_stock": "80.00",
+    "unit": "Kg",
+    "unit_cost": "950.00",
+    "supplier": "",
+    "location": "Main Storeroom",
+    "is_active": true,
+    "created_at": "2026-05-11T10:21:51.767Z",
+    "updated_at": "2026-05-11T10:21:51.767Z"
+  }
+},
+{
+  "model": "inventory.inventoryitem",
+  "pk": 8,
+  "fields": {
+    "sku": "FLV-003",
+    "name": "Ceremonial Matcha",
+    "category": "flavoring",
+    "description": "",
+    "current_stock": "8.00",
+    "min_stock": "10.00",
+    "max_stock": "30.00",
+    "unit": "Kg",
+    "unit_cost": "2800.00",
+    "supplier": "",
+    "location": "Main Storeroom",
+    "is_active": true,
+    "created_at": "2026-05-11T10:21:51.772Z",
+    "updated_at": "2026-05-11T10:21:51.772Z"
+  }
+},
+{
+  "model": "inventory.inventoryitem",
+  "pk": 9,
+  "fields": {
+    "sku": "PKG-001",
+    "name": "Branded Cups 500ml",
+    "category": "packaging",
+    "description": "",
+    "current_stock": "1200.00",
+    "min_stock": "400.00",
+    "max_stock": "3000.00",
+    "unit": "Units",
+    "unit_cost": "35.00",
+    "supplier": "",
+    "location": "Main Storeroom",
+    "is_active": true,
+    "created_at": "2026-05-11T10:21:51.779Z",
+    "updated_at": "2026-05-11T10:21:51.779Z"
+  }
+},
+{
+  "model": "inventory.inventoryitem",
+  "pk": 10,
+  "fields": {
+    "sku": "PKG-002",
+    "name": "Waffle Cones",
+    "category": "packaging",
+    "description": "",
+    "current_stock": "800.00",
+    "min_stock": "300.00",
+    "max_stock": "2000.00",
+    "unit": "Units",
+    "unit_cost": "25.00",
+    "supplier": "",
+    "location": "Main Storeroom",
+    "is_active": true,
+    "created_at": "2026-05-11T10:21:51.785Z",
+    "updated_at": "2026-05-11T10:21:51.785Z"
+  }
+},
+{
+  "model": "inventory.inventoryitem",
+  "pk": 11,
+  "fields": {
+    "sku": "PKG-003",
+    "name": "Dry Ice Blocks",
+    "category": "packaging",
+    "description": "",
+    "current_stock": "40.00",
+    "min_stock": "20.00",
+    "max_stock": "100.00",
+    "unit": "Kg",
+    "unit_cost": "600.00",
+    "supplier": "",
+    "location": "Main Storeroom",
+    "is_active": true,
+    "created_at": "2026-05-11T10:21:51.792Z",
+    "updated_at": "2026-05-11T10:21:51.792Z"
+  }
+},
+{
+  "model": "admin.logentry",
+  "pk": 1,
+  "fields": {
+    "action_time": "2026-05-12T06:35:20.001Z",
+    "user": [
+      "admin"
+    ],
+    "content_type": [
+      "store",
+      "flavor"
+    ],
+    "object_id": "5",
+    "object_repr": "Salted Caramel Savanna",
+    "action_flag": 2,
+    "change_message": "[{\"changed\": {\"fields\": [\"Price\"]}}]"
+  }
+},
+{
+  "model": "admin.logentry",
+  "pk": 2,
+  "fields": {
+    "action_time": "2026-05-12T06:36:26.249Z",
+    "user": [
+      "admin"
+    ],
+    "content_type": [
+      "store",
+      "sitesettings"
+    ],
+    "object_id": "1",
+    "object_repr": "Savanna Scoops",
+    "action_flag": 2,
+    "change_message": "[{\"changed\": {\"fields\": [\"Delivery fee\"]}}]"
+  }
+},
+{
+  "model": "admin.logentry",
+  "pk": 3,
+  "fields": {
+    "action_time": "2026-05-12T07:09:46.866Z",
+    "user": [
+      "admin"
+    ],
+    "content_type": [
+      "orders",
+      "order"
+    ],
+    "object_id": "15",
+    "object_repr": "Order SS-2B828920 - Dancan Mutuku",
+    "action_flag": 2,
+    "change_message": "[{\"changed\": {\"fields\": [\"Status\"]}}]"
+  }
+}
+]
