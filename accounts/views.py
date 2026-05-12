@@ -1,10 +1,12 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth import login, logout, authenticate
 from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
-from django.contrib.auth.models import User
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.utils.http import url_has_allowed_host_and_scheme
+from django.conf import settings
 from django import forms
+from django.contrib.auth.models import User
 
 
 class RegisterForm(forms.ModelForm):
@@ -41,27 +43,47 @@ class RegisterForm(forms.ModelForm):
 
 
 def login_view(request):
+    next_url = request.POST.get('next') or request.GET.get('next') or '/'
+
     if request.user.is_authenticated:
+        if url_has_allowed_host_and_scheme(next_url, allowed_hosts={request.get_host()}):
+            if not next_url.startswith('/admin-panel/') or request.user.is_staff:
+                return redirect(next_url)
+            messages.error(request, 'Staff access is required for the admin panel.')
         return redirect('shop')
     
     if request.method == 'POST':
-        email = request.POST.get('email', '').strip()
+        identifier = request.POST.get('email', '').strip()
         password = request.POST.get('password', '')
-        
-        try:
-            user_obj = User.objects.get(email=email)
-            user = authenticate(request, username=user_obj.username, password=password)
-        except User.DoesNotExist:
-            user = None
+        user = authenticate(request, username=identifier, password=password)
         
         if user:
             login(request, user)
-            next_url = request.GET.get('next', '/')
-            return redirect(next_url)
+            if url_has_allowed_host_and_scheme(next_url, allowed_hosts={request.get_host()}):
+                return redirect(next_url)
+            return redirect('shop')
         else:
-            messages.error(request, 'Invalid email or password.')
+            messages.error(request, 'Invalid username/email or password.')
     
-    return render(request, 'accounts/login.html', {'next': request.GET.get('next', '/')})
+    google_enabled = False
+    google_config_error = False
+    google_app = settings.SOCIALACCOUNT_PROVIDERS.get('google', {}).get('APP', {})
+    if google_app.get('client_id') and google_app.get('secret'):
+        try:
+            from allauth.socialaccount.models import SocialApp
+            google_enabled = SocialApp.objects.filter(provider='google').count() <= 1
+            google_config_error = not google_enabled
+        except Exception:
+            google_enabled = False
+    return render(
+        request,
+        'accounts/login.html',
+        {
+            'next': next_url,
+            'google_enabled': google_enabled,
+            'google_config_error': google_config_error,
+        },
+    )
 
 
 def register_view(request):
@@ -84,8 +106,11 @@ def logout_view(request):
 
 
 @login_required
-def profile_view(request):
+def profile_view(request, username=None):
     from orders.models import Order
+    if username and username not in {request.user.username, request.user.email}:
+        messages.error(request, 'You can only view your own profile.')
+        return redirect('profile')
     if request.method == 'POST':
         request.user.first_name = request.POST.get('first_name', '').strip()
         request.user.last_name = request.POST.get('last_name', '').strip()

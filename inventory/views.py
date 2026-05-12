@@ -1,9 +1,13 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import user_passes_test
+from django.contrib import admin, messages
+from django.forms import modelform_factory
 from django.http import JsonResponse
 from django.db.models import Sum, F
+from django.db.models.deletion import ProtectedError
 from django.utils import timezone
 from datetime import timedelta
+from functools import wraps
 import json
 
 from .models import InventoryItem, StockMovement, AuditLog
@@ -16,7 +20,19 @@ def is_staff(user):
     return user.is_authenticated and user.is_staff
 
 
-@user_passes_test(is_staff, login_url='/accounts/login/')
+def staff_required(view_func):
+    @wraps(view_func)
+    def wrapper(request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            return redirect('/accounts/login/?next=' + request.path)
+        if not request.user.is_staff:
+            messages.error(request, 'Staff access is required for the admin panel.')
+            return redirect('shop')
+        return view_func(request, *args, **kwargs)
+    return wrapper
+
+
+@staff_required
 def admin_dashboard(request):
     today = timezone.now().date()
     yesterday = today - timedelta(days=1)
@@ -69,7 +85,7 @@ def admin_dashboard(request):
     return render(request, 'admin_panel/dashboard.html', context)
 
 
-@user_passes_test(is_staff, login_url='/accounts/login/')
+@staff_required
 def inventory_list(request):
     items = InventoryItem.objects.filter(is_active=True).order_by('category', 'name')
     low_stock_items = [i for i in items if i.stock_status in ('critical', 'low')]
@@ -80,7 +96,7 @@ def inventory_list(request):
     })
 
 
-@user_passes_test(is_staff, login_url='/accounts/login/')
+@staff_required
 def inventory_update(request, item_id):
     item = get_object_or_404(InventoryItem, id=item_id)
     data = json.loads(request.body)
@@ -107,7 +123,7 @@ def inventory_update(request, item_id):
     return JsonResponse({'success': True, 'new_stock': float(new_stock), 'status': item.stock_status})
 
 
-@user_passes_test(is_staff, login_url='/accounts/login/')
+@staff_required
 def orders_admin(request):
     status_filter = request.GET.get('status', '')
     orders = Order.objects.prefetch_related('items').all()
@@ -121,7 +137,7 @@ def orders_admin(request):
     })
 
 
-@user_passes_test(is_staff, login_url='/accounts/login/')
+@staff_required
 def update_order_status(request, order_id):
     order = get_object_or_404(Order, id=order_id)
     data = json.loads(request.body)
@@ -136,7 +152,7 @@ def update_order_status(request, order_id):
     return JsonResponse({'success': True, 'status': new_status, 'display': order.get_status_display()})
 
 
-@user_passes_test(is_staff, login_url='/accounts/login/')
+@staff_required
 def analytics_view(request):
     flavor_sales = OrderItem.objects.values('flavor_name').annotate(
         total_qty=Sum('quantity'),
@@ -166,13 +182,126 @@ def analytics_view(request):
     })
 
 
-@user_passes_test(is_staff, login_url='/accounts/login/')
+@staff_required
 def audit_view(request):
     logs = AuditLog.objects.select_related('actor').all()[:100]
     return render(request, 'admin_panel/audit.html', {'logs': logs, 'admin_section': 'audit'})
 
 
-@user_passes_test(is_staff, login_url='/accounts/login/')
+@staff_required
 def flavors_admin(request):
     flavors = Flavor.objects.select_related('category').all()
     return render(request, 'admin_panel/flavors.html', {'flavors': flavors, 'admin_section': 'inventory'})
+
+
+@staff_required
+def invoice_view(request, order_id):
+    order = get_object_or_404(Order.objects.prefetch_related('items'), id=order_id)
+    return render(request, 'admin_panel/invoice.html', {
+        'order': order,
+        'issued_at': timezone.localtime(),
+        'site': SiteSettings.get_settings(),
+        'admin_section': 'operations',
+    })
+
+
+def _admin_model_registry():
+    registry = []
+    for model, model_admin in admin.site._registry.items():
+        registry.append({
+            'model': model,
+            'label': model._meta.label_lower.replace('.', '/'),
+            'name': model._meta.verbose_name_plural.title(),
+            'app': model._meta.app_label.title(),
+            'app_label': model._meta.app_label,
+            'model_name': model._meta.model_name,
+            'model_label': model._meta.label,
+        })
+    return sorted(registry, key=lambda item: (item['app'], item['name']))
+
+
+def _registered_model(app_label, model_name):
+    for item in _admin_model_registry():
+        model = item['model']
+        if model._meta.app_label == app_label and model._meta.model_name == model_name:
+            return model
+    return None
+
+
+@staff_required
+def admin_models_view(request):
+    return render(request, 'admin_panel/models.html', {
+        'models': _admin_model_registry(),
+        'admin_section': 'system',
+    })
+
+
+@staff_required
+def admin_model_list(request, app_label, model_name):
+    model = _registered_model(app_label, model_name)
+    if not model:
+        messages.error(request, 'That admin model is not available.')
+        return redirect('admin_models')
+
+    objects = model.objects.all()[:200]
+    fields = [field for field in model._meta.fields if field.name != 'id'][:6]
+    return render(request, 'admin_panel/model_list.html', {
+        'model_class': model,
+        'app_label': model._meta.app_label,
+        'model_name': model._meta.model_name,
+        'model_label': model._meta.label,
+        'verbose_name': model._meta.verbose_name.title(),
+        'verbose_name_plural': model._meta.verbose_name_plural.title(),
+        'objects': objects,
+        'fields': fields,
+        'admin_section': 'system',
+    })
+
+
+@staff_required
+def admin_model_form(request, app_label, model_name, object_id=None):
+    model = _registered_model(app_label, model_name)
+    if not model:
+        messages.error(request, 'That admin model is not available.')
+        return redirect('admin_models')
+
+    instance = get_object_or_404(model, pk=object_id) if object_id else None
+    form_class = modelform_factory(model, fields='__all__')
+    form = form_class(request.POST or None, request.FILES or None, instance=instance)
+    if request.method == 'POST' and form.is_valid():
+        form.save()
+        messages.success(request, f'{model._meta.verbose_name.title()} saved.')
+        return redirect('admin_model_list', app_label=app_label, model_name=model_name)
+
+    return render(request, 'admin_panel/model_form.html', {
+        'form': form,
+        'app_label': model._meta.app_label,
+        'model_name': model._meta.model_name,
+        'verbose_name': model._meta.verbose_name.title(),
+        'verbose_name_plural': model._meta.verbose_name_plural.title(),
+        'object': instance,
+        'admin_section': 'system',
+    })
+
+
+@staff_required
+def admin_model_delete(request, app_label, model_name, object_id):
+    model = _registered_model(app_label, model_name)
+    if not model:
+        messages.error(request, 'That admin model is not available.')
+        return redirect('admin_models')
+    instance = get_object_or_404(model, pk=object_id)
+    if request.method == 'POST':
+        try:
+            instance.delete()
+            messages.success(request, f'{model._meta.verbose_name.title()} deleted.')
+        except ProtectedError:
+            messages.error(request, 'This record is protected because other data depends on it.')
+        return redirect('admin_model_list', app_label=app_label, model_name=model_name)
+    return render(request, 'admin_panel/model_delete.html', {
+        'app_label': model._meta.app_label,
+        'model_name': model._meta.model_name,
+        'verbose_name': model._meta.verbose_name.title(),
+        'object': instance,
+        'admin_section': 'system',
+    })

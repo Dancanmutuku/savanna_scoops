@@ -185,7 +185,7 @@ class Command(BaseCommand):
     help = 'Seed the database with sample Savanna Scoops data'
 
     def handle(self, *args, **options):
-        self.stdout.write(self.style.MIGRATE_HEADING('🍦 Seeding Savanna Scoops database...'))
+        self.stdout.write(self.style.MIGRATE_HEADING('Seeding Savanna Scoops database...'))
 
         # Site settings
         settings_obj, _ = SiteSettings.objects.get_or_create(pk=1)
@@ -197,7 +197,7 @@ class Command(BaseCommand):
         settings_obj.delivery_fee = Decimal('150.00')
         settings_obj.free_delivery_threshold = Decimal('2000.00')
         settings_obj.save()
-        self.stdout.write('  ✓ Site settings configured')
+        self.stdout.write('  - Site settings configured')
 
         # Categories
         cat_map = {}
@@ -208,7 +208,7 @@ class Command(BaseCommand):
             )
             cat_map[cat_data['slug']] = cat
             if created:
-                self.stdout.write(f'  ✓ Category: {cat.name}')
+                self.stdout.write(f'  - Category: {cat.name}')
 
         # Flavors
         for f_data in FLAVORS:
@@ -224,7 +224,7 @@ class Command(BaseCommand):
                 flavor.category = cat
                 flavor.save()
             if created:
-                self.stdout.write(f'  ✓ Flavor: {flavor.name}')
+                self.stdout.write(f'  - Flavor: {flavor.name}')
 
         # Inventory items
         for inv_data in INVENTORY_ITEMS:
@@ -233,18 +233,34 @@ class Command(BaseCommand):
                 defaults=inv_data
             )
             if created:
-                self.stdout.write(f'  ✓ Inventory: {item.name}')
+                self.stdout.write(f'  - Inventory: {item.name}')
 
-        # Superuser
-        if not User.objects.filter(username='admin').exists():
-            User.objects.create_superuser(
-                username='admin',
-                email='admin@savanascoops.co.ke',
-                password='admin123',
-                first_name='Admin',
-                last_name='Scoops',
-            )
-            self.stdout.write(self.style.SUCCESS('  ✓ Superuser created: admin / admin123'))
+        # Demo users
+        admin_user, admin_created = User.objects.get_or_create(username='admin')
+        admin_user.email = 'admin@savanascoops.co.ke'
+        admin_user.first_name = 'Admin'
+        admin_user.last_name = 'Scoops'
+        admin_user.is_staff = True
+        admin_user.is_superuser = True
+        admin_user.set_password('admin123')
+        admin_user.save()
+        if admin_created:
+            self.stdout.write(self.style.SUCCESS('  - Superuser created: admin / admin123'))
+        else:
+            self.stdout.write(self.style.SUCCESS('  - Superuser refreshed: admin / admin123'))
+
+        customer_user, customer_created = User.objects.get_or_create(username='customer')
+        customer_user.email = 'customer@savanascoops.co.ke'
+        customer_user.first_name = 'Jane'
+        customer_user.last_name = 'Customer'
+        customer_user.is_staff = False
+        customer_user.is_superuser = False
+        customer_user.set_password('customer123')
+        customer_user.save()
+        if customer_created:
+            self.stdout.write(self.style.SUCCESS('  - Customer user created: customer / customer123'))
+        else:
+            self.stdout.write(self.style.SUCCESS('  - Customer user refreshed: customer / customer123'))
 
         # Sample orders
         if Order.objects.count() == 0:
@@ -270,9 +286,10 @@ class Command(BaseCommand):
                         price=flavor.price,
                         quantity=random.randint(1, 3),
                     )
-            self.stdout.write('  ✓ 5 sample orders created')
+            self.stdout.write('  - 5 sample orders created')
 
-        self.stdout.write(self.style.SUCCESS('\n✅ Savanna Scoops database seeded successfully!'))
-        self.stdout.write(self.style.WARNING('   Admin login: admin / admin123'))
+        self.stdout.write(self.style.SUCCESS('\nSavanna Scoops database seeded successfully!'))
+        self.stdout.write(self.style.WARNING('   Admin login: admin or admin@savanascoops.co.ke / admin123'))
+        self.stdout.write(self.style.WARNING('   Customer login: customer or customer@savanascoops.co.ke / customer123'))
         self.stdout.write(self.style.WARNING('   Admin panel: http://127.0.0.1:8000/admin-panel/'))
         self.stdout.write(self.style.WARNING('   Django admin: http://127.0.0.1:8000/django-admin/'))

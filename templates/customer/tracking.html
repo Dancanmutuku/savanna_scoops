@@ -59,9 +59,14 @@
 
         {% if order.mpesa_receipt %}
         <div class="mt-6 p-4 bg-green-50 rounded-2xl border border-green-200">
-          <p class="text-xs font-bold text-green-700 uppercase tracking-widest">M-Pesa Receipt</p>
+          <p class="text-xs font-bold text-green-700 uppercase tracking-widest">Transaction Code</p>
           <p class="font-mono font-bold text-green-800 mt-1">{{ order.mpesa_receipt }}</p>
         </div>
+        {% endif %}
+        {% if order.payment_status == 'paid' %}
+        <a href="{% url 'order_receipt' order.order_number %}" class="mt-6 inline-flex w-full justify-center py-4 bg-secondary text-white rounded-2xl font-bold hover:opacity-90 transition-all">
+          View Receipt
+        </a>
         {% endif %}
       </div>
 

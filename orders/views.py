@@ -6,6 +6,7 @@ from django.contrib import messages
 from django.core.mail import send_mail
 from django.template.loader import render_to_string
 from django.conf import settings
+from django.utils import timezone
 import json
 
 from .models import Order, OrderItem, OrderStatusHistory
@@ -37,7 +38,7 @@ def create_order(request):
         subtotal=subtotal,
         delivery_fee=delivery_fee,
         total=total,
-        payment_method='M-Pesa',
+        payment_method=data.get('payment_method', 'M-Pesa'),
     )
     
     for flavor_id, item in cart.items():
@@ -83,6 +84,16 @@ def order_confirmation(request, order_number):
         pass  # Email is best-effort
     
     return render(request, 'customer/order_confirmation.html', {'order': order})
+
+
+def receipt_view(request, order_number):
+    """Customer receipt page."""
+    order = get_object_or_404(Order.objects.prefetch_related('items'), order_number=order_number)
+    return render(request, 'customer/receipt.html', {
+        'order': order,
+        'issued_at': timezone.localtime(),
+        'site': SiteSettings.get_settings(),
+    })
 
 
 def order_status_api(request, order_number):

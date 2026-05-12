@@ -2,6 +2,7 @@ from django.shortcuts import get_object_or_404
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
+from django.utils import timezone
 import json
 import logging
 
@@ -10,6 +11,31 @@ from .mpesa import initiate_stk_push, query_stk_status
 from orders.models import Order, OrderStatusHistory
 
 logger = logging.getLogger(__name__)
+
+
+def _fallback_code(prefix, value):
+    suffix = (value or timezone.now().strftime('%Y%m%d%H%M%S'))[-8:].upper()
+    return f'{prefix}-{suffix}'
+
+
+def _mark_order_paid(order, method, transaction_code, note=None):
+    order.payment_method = method
+    order.payment_status = 'paid'
+    order.status = 'confirmed'
+    order.mpesa_receipt = transaction_code
+    order.save()
+    OrderStatusHistory.objects.create(
+        order=order,
+        status='confirmed',
+        note=note or f'{method} payment confirmed. Transaction: {transaction_code}',
+    )
+
+
+def _mark_order_cancelled(order, note):
+    order.payment_status = 'cancelled'
+    order.status = 'cancelled'
+    order.save()
+    OrderStatusHistory.objects.create(order=order, status='cancelled', note=note)
 
 
 @require_POST
@@ -78,22 +104,29 @@ def check_payment_status(request):
     if result_code == 0:
         txn.status = 'success'
         txn.result_code = 0
+        txn.mpesa_receipt_number = txn.mpesa_receipt_number or _fallback_code('MPESA', checkout_request_id)
         txn.save()
         if txn.order:
-            txn.order.payment_status = 'paid'
-            txn.order.status = 'confirmed'
-            txn.order.save()
-            OrderStatusHistory.objects.create(
-                order=txn.order, status='confirmed',
-                note='Payment received via M-Pesa.'
+            _mark_order_paid(
+                txn.order,
+                'M-Pesa',
+                txn.mpesa_receipt_number,
+                f'Payment received via M-Pesa. Receipt: {txn.mpesa_receipt_number}',
             )
-        return JsonResponse({'success': True, 'status': 'success', 'order_number': txn.order.order_number if txn.order else ''})
+        return JsonResponse({
+            'success': True,
+            'status': 'success',
+            'order_number': txn.order.order_number if txn.order else '',
+            'receipt': txn.mpesa_receipt_number,
+        })
     
     elif result_code == 1032:
         txn.status = 'cancelled'
         txn.result_desc = 'User cancelled'
         txn.save()
-        return JsonResponse({'success': False, 'status': 'cancelled', 'error': 'Payment was cancelled.'})
+        if txn.order:
+            _mark_order_cancelled(txn.order, 'M-Pesa prompt was cancelled by the customer.')
+        return JsonResponse({'success': False, 'status': 'cancelled', 'error': 'Payment has been canceled.'})
     
     return JsonResponse({'success': False, 'status': 'pending', 'message': 'Waiting for payment...'})
 
@@ -129,20 +162,19 @@ def mpesa_callback(request):
             for item in callback_metadata:
                 if item.get('Name') == 'MpesaReceiptNumber':
                     receipt = item.get('Value', '')
+            receipt = receipt or _fallback_code('MPESA', checkout_request_id)
             
             txn.status = 'success'
             txn.mpesa_receipt_number = receipt
             txn.save()
             
             if txn.order:
-                txn.order.payment_status = 'paid'
-                txn.order.mpesa_receipt = receipt
-                txn.order.status = 'confirmed'
-                txn.order.save()
-                OrderStatusHistory.objects.create(
-                    order=txn.order, status='confirmed',
-                    note=f'M-Pesa payment confirmed. Receipt: {receipt}'
-                )
+                _mark_order_paid(txn.order, 'M-Pesa', receipt, f'M-Pesa payment confirmed. Receipt: {receipt}')
+        elif result_code == 1032:
+            txn.status = 'cancelled'
+            txn.save()
+            if txn.order:
+                _mark_order_cancelled(txn.order, 'M-Pesa prompt was cancelled by the customer.')
         else:
             txn.status = 'failed'
             txn.save()
@@ -153,3 +185,21 @@ def mpesa_callback(request):
         logger.error(f"M-Pesa callback error: {e}")
     
     return JsonResponse({'ResultCode': 0, 'ResultDesc': 'Accepted'})
+
+
+@require_POST
+def complete_manual_payment(request):
+    """Mark an order paid for non-M-Pesa checkout methods."""
+    data = json.loads(request.body)
+    order = get_object_or_404(Order, id=data.get('order_id'))
+    method = data.get('payment_method', 'Card')
+    transaction_code = data.get('transaction_code') or _fallback_code(method.upper().replace(' ', ''), order.order_number)
+    _mark_order_paid(order, method, transaction_code)
+    request.session['cart'] = {}
+    request.session.modified = True
+    return JsonResponse({
+        'success': True,
+        'status': 'success',
+        'order_number': order.order_number,
+        'receipt': transaction_code,
+    })

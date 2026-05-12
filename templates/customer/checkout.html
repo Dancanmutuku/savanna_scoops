@@ -128,15 +128,28 @@
           </div>
         </div>
 
-        <!-- Other payment methods -->
-        <div class="sculpted-card rounded-[2rem] p-6 opacity-50 grayscale cursor-not-allowed">
-          <div class="flex items-center gap-3">
-            <div class="w-10 h-10 bg-surface-container-high rounded-xl flex items-center justify-center text-on-surface-variant text-sm">💳</div>
-            <div>
-              <span class="font-bold text-on-surface">Card Payment</span>
-              <p class="text-[10px] text-on-surface-variant">Coming soon</p>
+        <!-- Card payment -->
+        <div class="sculpted-card rounded-[2rem] p-8 border border-outline-variant/20">
+          <div class="flex items-center justify-between gap-3 mb-5">
+            <div class="flex items-center gap-3">
+              <div class="w-11 h-11 bg-inverse-surface text-inverse-on-surface rounded-2xl flex items-center justify-center text-sm font-black">💳</div>
+              <div>
+                <span class="font-black text-on-surface">Card Payment</span>
+                <p class="text-[10px] text-on-surface-variant">Instant checkout with a transaction code</p>
+              </div>
             </div>
+            <span class="text-[10px] uppercase tracking-widest font-black text-secondary">Secure</span>
           </div>
+          {% if cart_items %}
+          <button id="cardPayBtn" onclick="completeCardPayment()"
+                  class="w-full py-4 bg-inverse-surface text-inverse-on-surface rounded-2xl font-black hover:opacity-90 transition-all">
+            Pay by Card
+          </button>
+          {% else %}
+          <button class="w-full py-4 bg-surface-container-high text-on-surface-variant rounded-2xl font-black opacity-60 cursor-not-allowed">
+            Add items to cart first
+          </button>
+          {% endif %}
         </div>
       </div>
     </div>
@@ -178,6 +191,19 @@ let checkoutRequestId = null;
 let pollInterval = null;
 let orderId = null;
 
+function getCheckoutDetails() {
+  const name = document.getElementById('customerName').value.trim();
+  const email = document.getElementById('customerEmail').value.trim();
+  const phone = document.getElementById('mpesaPhone').value.trim();
+  const address = document.getElementById('deliveryAddress').value.trim();
+
+  if (!name) { showToast('Please enter your name', 'error'); return null; }
+  if (!email) { showToast('Please enter your email', 'error'); return null; }
+  if (!phone || phone.length < 9) { showToast('Please enter a valid phone number', 'error'); return null; }
+  if (!address) { showToast('Please enter your delivery address', 'error'); return null; }
+  return { name, email, phone, address };
+}
+
 async function removeItem(flavorId) {
   try {
     const resp = await fetch('/cart/remove/', {
@@ -195,15 +221,8 @@ async function removeItem(flavorId) {
 }
 
 async function initiatePayment() {
-  const name = document.getElementById('customerName').value.trim();
-  const email = document.getElementById('customerEmail').value.trim();
-  const phone = document.getElementById('mpesaPhone').value.trim();
-  const address = document.getElementById('deliveryAddress').value.trim();
-
-  if (!name) { showToast('Please enter your name', 'error'); return; }
-  if (!email) { showToast('Please enter your email', 'error'); return; }
-  if (!phone || phone.length < 9) { showToast('Please enter a valid phone number', 'error'); return; }
-  if (!address) { showToast('Please enter your delivery address', 'error'); return; }
+  const details = getCheckoutDetails();
+  if (!details) return;
 
   const payBtn = document.getElementById('payBtn');
   payBtn.textContent = 'Creating order...';
@@ -214,7 +233,13 @@ async function initiatePayment() {
     const orderResp = await fetch('/orders/create/', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCookie('csrftoken') },
-      body: JSON.stringify({ name, email, phone: `+254${phone}`, address }),
+      body: JSON.stringify({
+        name: details.name,
+        email: details.email,
+        phone: `+254${details.phone}`,
+        address: details.address,
+        payment_method: 'M-Pesa',
+      }),
     });
     const orderData = await orderResp.json();
     if (!orderData.success) {
@@ -228,7 +253,7 @@ async function initiatePayment() {
     const payResp = await fetch('/payments/mpesa/initiate/', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCookie('csrftoken') },
-      body: JSON.stringify({ phone: `+254${phone}`, order_id: orderId }),
+      body: JSON.stringify({ phone: `+254${details.phone}`, order_id: orderId }),
     });
     const payData = await payResp.json();
     
@@ -249,6 +274,51 @@ async function initiatePayment() {
   } finally {
     payBtn.innerHTML = `Pay KSh <span id="payAmount">{{ total|floatformat:0 }}</span> →`;
     payBtn.disabled = false;
+  }
+}
+
+async function completeCardPayment() {
+  const details = getCheckoutDetails();
+  if (!details) return;
+  const cardBtn = document.getElementById('cardPayBtn');
+  cardBtn.textContent = 'Processing card...';
+  cardBtn.disabled = true;
+
+  try {
+    const orderResp = await fetch('/orders/create/', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCookie('csrftoken') },
+      body: JSON.stringify({
+        name: details.name,
+        email: details.email,
+        phone: `+254${details.phone}`,
+        address: details.address,
+        payment_method: 'Card',
+      }),
+    });
+    const orderData = await orderResp.json();
+    if (!orderData.success) {
+      showToast(orderData.error || 'Order creation failed', 'error');
+      return;
+    }
+
+    const payResp = await fetch('/payments/manual/complete/', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCookie('csrftoken') },
+      body: JSON.stringify({ order_id: orderData.order_id, payment_method: 'Card' }),
+    });
+    const payData = await payResp.json();
+    if (payData.success) {
+      showToast(`Payment confirmed. Code: ${payData.receipt}`);
+      window.location.href = `/orders/confirmation/${payData.order_number}/`;
+    } else {
+      showToast(payData.error || 'Card payment failed', 'error');
+    }
+  } catch(e) {
+    showToast('Card payment failed. Please try again.', 'error');
+  } finally {
+    cardBtn.textContent = 'Pay by Card';
+    cardBtn.disabled = false;
   }
 }
 
@@ -277,7 +347,7 @@ function startPolling(orderNumber) {
         showPaymentSuccess(data.order_number);
       } else if (data.status === 'cancelled' || data.status === 'failed') {
         clearInterval(pollInterval);
-        showPaymentError(data.error || 'Payment was cancelled.');
+        showPaymentError(data.error || 'Payment has been canceled.');
       }
     } catch(e) { /* Keep polling */ }
   }, 3000);
@@ -291,6 +361,7 @@ function showPaymentSuccess(orderNumber) {
 
 function showPaymentError(msg) {
   document.getElementById('paymentSpinner').classList.add('hidden');
+  document.getElementById('paymentSuccess').classList.add('hidden');
   document.getElementById('paymentError').classList.remove('hidden');
   document.getElementById('errorMsg').textContent = msg;
 }

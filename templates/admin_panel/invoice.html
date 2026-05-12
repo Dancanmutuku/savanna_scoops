@@ -1,0 +1,183 @@
+{% extends "admin_panel/base_admin.html" %}
+{% block admin_breadcrumb %}Operations / Invoice{% endblock %}
+{% block admin_title %}Invoice {{ order.order_number }}{% endblock %}
+
+{% block extra_css %}
+<style>
+  .invoice-paper {
+    background:
+      radial-gradient(circle at top left, rgba(142,78,20,.07), transparent 30%),
+      linear-gradient(180deg, #fffdfa, #fff);
+  }
+  .letterhead-band {
+    background:
+      linear-gradient(90deg, #1c1c17 0%, #3e2b19 34%, #8e4e14 100%);
+  }
+  .invoice-watermark {
+    position: absolute; right: 34px; bottom: 20px; font-size: 110px; line-height: 1;
+    color: rgba(49,49,43,.035); font-weight: 900; pointer-events: none;
+  }
+  .seal-wrap {
+    position: relative; width: 204px; height: 204px; transform: rotate(-11deg);
+    filter: saturate(.92) contrast(1.04);
+  }
+  .seal {
+    position: absolute; inset: 0; border-radius: 9999px; color: var(--seal-color);
+    border: 5px solid currentColor;
+    box-shadow:
+      inset 0 0 0 3px rgba(255,255,255,.72),
+      inset 0 0 0 12px currentColor,
+      inset 0 0 0 15px rgba(255,255,255,.78);
+    background:
+      radial-gradient(circle at 50% 50%, rgba(255,255,255,.0) 0 56%, rgba(255,255,255,.14) 57% 59%, transparent 60%),
+      repeating-radial-gradient(circle at 50% 50%, rgba(255,255,255,.08) 0 2px, transparent 2px 7px);
+    opacity: .88;
+    mix-blend-mode: multiply;
+  }
+  .seal::before,
+  .seal::after {
+    content: ""; position: absolute; inset: 18px; border-radius: 9999px; border: 2px dashed rgba(255,255,255,.55);
+  }
+  .seal-copy {
+    position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center;
+    color: var(--seal-color); text-transform: uppercase; font-family: "Courier New", monospace; mix-blend-mode: multiply;
+  }
+  .seal-copy strong { font-size: 36px; line-height: 1; font-weight: 900; letter-spacing: .12em; }
+  .seal-copy span { font-size: 10px; font-weight: 700; letter-spacing: .28em; margin-top: 8px; text-align: center; }
+  .seal-copy small { font-size: 9px; letter-spacing: .24em; margin-top: 7px; }
+  .stamp-paid { --seal-color: #0c7a43; }
+  .stamp-due { --seal-color: #bb152c; }
+  .print-letterhead { display: none; }
+  @media print {
+    @page { margin: 14mm; }
+    body { background: #fff !important; }
+    aside, header, .print-hidden, #toast-container { display: none !important; }
+    main { padding: 0 !important; overflow: visible !important; }
+    .print-letterhead { display: flex; }
+    .invoice-paper { box-shadow: none !important; border: 0 !important; border-radius: 0 !important; }
+    .letterhead-band { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  }
+</style>
+{% endblock %}
+
+{% block admin_content %}
+<div class="print-letterhead max-w-5xl mx-auto mb-5 items-center justify-between border-b-2 border-on-surface pb-4">
+  <div>
+    <h1 class="text-2xl font-sans font-black">{{ site.store_name }}</h1>
+    <p class="text-xs">{{ site.address }} | {{ site.phone }} | {{ site.email }}</p>
+  </div>
+  <p class="font-mono text-xs">Invoice {{ order.order_number }}</p>
+</div>
+
+<section class="invoice-paper relative max-w-5xl mx-auto bg-white rounded-[2rem] border border-outline-variant/30 shadow-2xl overflow-hidden">
+  <div class="invoice-watermark">SS</div>
+  <div class="letterhead-band px-8 md:px-10 py-5 text-white">
+    <div class="flex flex-col md:flex-row md:items-end justify-between gap-5">
+      <div>
+        <p class="text-[10px] uppercase tracking-[0.35em] text-white/70 font-black">Savanna Scoops</p>
+        <h1 class="text-3xl md:text-4xl font-sans font-black tracking-tight mt-1">Tax Invoice</h1>
+      </div>
+      <div class="text-xs md:text-sm text-white/80 md:text-right">
+        <p>{{ site.address }}</p>
+        <p>{{ site.phone }} · {{ site.email }}</p>
+      </div>
+    </div>
+  </div>
+  <div class="grid md:grid-cols-[1fr_300px]">
+    <div class="p-8 md:p-10">
+      <p class="text-[10px] uppercase tracking-[0.35em] text-secondary font-black">Tax Invoice</p>
+      <h2 class="text-5xl font-sans font-black tracking-tight mt-2">Order Billing Summary</h2>
+      <p class="text-sm text-on-surface-variant mt-2">Prepared for order reconciliation, delivery confirmation, and payment audit using the recorded transaction code.</p>
+    </div>
+    <div class="bg-inverse-surface text-inverse-on-surface p-8 md:p-10 flex md:flex-col justify-between gap-6">
+      <div>
+        <p class="text-[10px] uppercase tracking-widest text-inverse-on-surface/50">Invoice No.</p>
+        <p class="font-mono font-black text-2xl mt-1">{{ order.order_number }}</p>
+      </div>
+      <div>
+        <p class="text-[10px] uppercase tracking-widest text-inverse-on-surface/50">Live Timestamp</p>
+        <p class="font-mono text-sm mt-1" id="liveStamp">{{ issued_at|date:"d M Y, H:i:s" }}</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="p-8 md:p-10 pt-0">
+    <div class="flex flex-col md:flex-row md:items-start justify-between gap-8 border-y border-outline-variant/20 py-8">
+      <div class="grid sm:grid-cols-3 gap-5 flex-1">
+        <div>
+          <p class="text-[10px] uppercase tracking-widest text-on-surface-variant font-black">Bill To</p>
+          <p class="font-black mt-2">{{ order.customer_name }}</p>
+          <p class="text-sm text-on-surface-variant">{{ order.customer_email }}</p>
+        </div>
+        <div>
+          <p class="text-[10px] uppercase tracking-widest text-on-surface-variant font-black">Delivery</p>
+          <p class="font-bold mt-2">{{ order.customer_phone }}</p>
+          <p class="text-sm text-on-surface-variant">{{ order.delivery_address }}</p>
+        </div>
+        <div>
+          <p class="text-[10px] uppercase tracking-widest text-on-surface-variant font-black">Payment</p>
+          <p class="font-black mt-2">{{ order.payment_method }} · {{ order.payment_status|capfirst }}</p>
+          <p class="font-mono text-sm text-secondary font-black mt-1">{{ order.mpesa_receipt|default:"Pending" }}</p>
+        </div>
+      </div>
+      <div class="seal-wrap {% if order.payment_status == 'paid' %}stamp-paid{% else %}stamp-due{% endif %}">
+        <div class="seal"></div>
+        <div class="seal-copy">
+          <small>Official Copy</small>
+          <strong>{% if order.payment_status == 'paid' %}Paid{% else %}Due{% endif %}</strong>
+          <span>{{ site.store_name }}</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="mt-8 overflow-x-auto">
+      <table class="w-full text-left">
+        <thead>
+          <tr class="bg-surface-container-low">
+            <th class="p-4 text-xs uppercase tracking-widest text-on-surface-variant">Description</th>
+            <th class="p-4 text-xs uppercase tracking-widest text-on-surface-variant text-center">Qty</th>
+            <th class="p-4 text-xs uppercase tracking-widest text-on-surface-variant text-right">Unit</th>
+            <th class="p-4 text-xs uppercase tracking-widest text-on-surface-variant text-right">Amount</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-outline-variant/10">
+          {% for item in order.items.all %}
+          <tr>
+            <td class="p-4 font-bold">{{ item.flavor_name }}</td>
+            <td class="p-4 text-center">{{ item.quantity }}</td>
+            <td class="p-4 text-right">KSh {{ item.price|floatformat:0 }}</td>
+            <td class="p-4 text-right font-bold">KSh {{ item.subtotal|floatformat:0 }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <div class="mt-8 grid md:grid-cols-[1fr_340px] gap-8 items-end">
+      <div class="text-sm text-on-surface-variant">
+        <p class="font-bold text-on-surface">Internal note</p>
+        <p>This invoice keeps the company letterhead visible when printed or saved as PDF and uses the recorded transaction code for reconciliation.</p>
+      </div>
+      <div class="bg-surface-container-low rounded-2xl p-5 space-y-3">
+        <div class="flex justify-between text-sm"><span>Subtotal</span><strong>KSh {{ order.subtotal|floatformat:0 }}</strong></div>
+        <div class="flex justify-between text-sm"><span>Delivery</span><strong>KSh {{ order.delivery_fee|floatformat:0 }}</strong></div>
+        <div class="flex justify-between text-2xl font-black border-t-2 border-dashed border-outline-variant/30 pt-4"><span>Total</span><span class="text-secondary">KSh {{ order.total|floatformat:0 }}</span></div>
+      </div>
+    </div>
+
+    <div class="mt-8 flex flex-wrap gap-3 print-hidden">
+      <button onclick="window.print()" class="px-6 py-3 bg-primary text-white rounded-2xl font-bold">Download / Print PDF</button>
+      <a href="{% url 'admin_orders' %}" class="px-6 py-3 bg-surface-container-high rounded-2xl font-bold">Back to Orders</a>
+    </div>
+  </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+setInterval(() => {
+  const el = document.getElementById('liveStamp');
+  if (el) el.textContent = new Date().toLocaleString();
+}, 1000);
+</script>
+{% endblock %}

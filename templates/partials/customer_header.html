@@ -33,7 +33,7 @@
 
     {% if user.is_authenticated %}
       <div class="flex items-center gap-2">
-        <a href="{% url 'profile' %}" class="hidden md:flex items-center gap-2 px-3 py-2 bg-surface-container-high rounded-full hover:bg-surface-container-highest transition-all group">
+        <a href="{% url 'profile_detail' user.username %}" class="hidden md:flex items-center gap-2 px-3 py-2 bg-surface-container-high rounded-full hover:bg-surface-container-highest transition-all group">
           <div class="w-7 h-7 rounded-full bg-secondary text-white flex items-center justify-center text-xs font-bold">{{ user.first_name|first|upper }}{{ user.last_name|first|upper }}</div>
           <span class="text-xs font-bold text-on-surface-variant">{{ user.first_name }}</span>
         </a>
@@ -42,6 +42,9 @@
           Admin
         </a>
         {% endif %}
+        <a href="{% url 'logout' %}" class="hidden md:flex items-center gap-1 px-3 py-2 bg-surface-container-high text-on-surface-variant rounded-full text-xs font-bold hover:bg-surface-container-highest transition-all">
+          Logout
+        </a>
       </div>
     {% else %}
       <a href="{% url 'login' %}" class="hidden md:flex items-center gap-2 px-4 py-2 bg-surface-container-highest/50 rounded-full hover:bg-surface-container-highest transition-all">

@@ -1,13 +1,18 @@
 {% extends 'base.html' %}
 {% block title %}My Orders – Savanna Scoops{% endblock %}
 
-{% block content %}
+{% block body %}
 {% include 'partials/customer_header.html' %}
 
 <main class="min-h-screen pt-24 pb-16" style="background: var(--color-surface);">
   <div class="max-w-4xl mx-auto px-4">
     <h1 class="text-4xl font-bold mb-2" style="font-family:'Playfair Display',serif; color:var(--color-dark);">My Orders</h1>
     <p class="text-gray-500 mb-10">Your complete order history at Savanna Scoops</p>
+    <div class="mb-8">
+      <a href="{% url 'profile_detail' user.username %}" class="inline-flex items-center gap-2 px-5 py-3 rounded-2xl bg-surface-container-high font-bold text-on-surface hover:bg-surface-container-highest transition-colors">
+        My Profile
+      </a>
+    </div>
 
     {% if orders %}
       <div class="space-y-6">
@@ -50,6 +55,11 @@
                   onmouseout="this.style.background='transparent'">
                   Track Order
                 </a>
+                {% if order.payment_status == 'paid' %}
+                <a href="{% url 'order_receipt' order.order_number %}" class="text-sm px-4 py-2 rounded-xl bg-secondary text-white font-semibold">
+                  Receipt
+                </a>
+                {% endif %}
               </div>
             </div>
             <!-- Progress bar -->

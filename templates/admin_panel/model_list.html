@@ -1,0 +1,39 @@
+{% extends "admin_panel/base_admin.html" %}
+{% load admin_panel_extras %}
+{% block admin_breadcrumb %}System / {{ app_label }}{% endblock %}
+{% block admin_title %}{{ verbose_name_plural }}{% endblock %}
+{% block admin_content %}
+<div class="sculpted-card rounded-[2rem] overflow-hidden">
+  <div class="p-6 flex justify-between items-center border-b border-outline-variant/10">
+    <p class="text-sm text-on-surface-variant">Showing up to 200 records</p>
+    <a href="{% url 'admin_model_add' app_label model_name %}" class="px-5 py-3 bg-primary text-white rounded-2xl font-bold text-sm">Add New</a>
+  </div>
+  <div class="overflow-x-auto">
+    <table class="w-full text-left">
+      <thead>
+        <tr class="bg-surface-container-low/50">
+          <th class="ss-table-header">Record</th>
+          {% for field in fields %}<th class="ss-table-header">{{ field.verbose_name|title }}</th>{% endfor %}
+          <th class="ss-table-header text-right">Actions</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-outline-variant/10">
+        {% for object in objects %}
+        <tr>
+          <td class="px-6 py-4 font-bold">{{ object }}</td>
+          {% for field in fields %}
+          <td class="px-6 py-4 text-sm text-on-surface-variant">{{ object|getattr_value:field.name }}</td>
+          {% endfor %}
+          <td class="px-6 py-4 text-right whitespace-nowrap">
+            <a href="{% url 'admin_model_edit' app_label model_name object.pk %}" class="px-3 py-2 bg-surface-container-high rounded-xl text-xs font-bold">Edit</a>
+            <a href="{% url 'admin_model_delete' app_label model_name object.pk %}" class="px-3 py-2 bg-tertiary/10 text-tertiary rounded-xl text-xs font-bold">Delete</a>
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="8" class="px-6 py-16 text-center text-on-surface-variant">No records yet.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

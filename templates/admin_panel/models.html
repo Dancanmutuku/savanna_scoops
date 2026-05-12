@@ -1,0 +1,14 @@
+{% extends "admin_panel/base_admin.html" %}
+{% block admin_breadcrumb %}System{% endblock %}
+{% block admin_title %}All Admin Tools{% endblock %}
+{% block admin_content %}
+<div class="grid md:grid-cols-2 xl:grid-cols-3 gap-5">
+  {% for item in models %}
+  <a href="{% url 'admin_model_list' item.app_label item.model_name %}" class="sculpted-card rounded-2xl p-5 hover:border-primary/30">
+    <p class="text-[10px] uppercase tracking-widest text-secondary font-black">{{ item.app }}</p>
+    <h3 class="font-sans font-black text-xl mt-1">{{ item.name }}</h3>
+    <p class="text-xs text-on-surface-variant mt-3 font-mono">{{ item.model_label }}</p>
+  </a>
+  {% endfor %}
+</div>
+{% endblock %}

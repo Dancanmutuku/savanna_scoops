@@ -1,0 +1,20 @@
+{% extends "admin_panel/base_admin.html" %}
+{% block admin_breadcrumb %}System / {{ verbose_name_plural }}{% endblock %}
+{% block admin_title %}{% if object %}Edit{% else %}Add{% endif %} {{ verbose_name }}{% endblock %}
+{% block admin_content %}
+<form method="post" enctype="multipart/form-data" class="sculpted-card rounded-[2rem] p-8 max-w-3xl space-y-5">
+  {% csrf_token %}
+  {% for field in form %}
+  <div>
+    <label class="text-[10px] uppercase tracking-widest text-on-surface-variant font-black block mb-2">{{ field.label }}</label>
+    {{ field }}
+    {% if field.help_text %}<p class="text-xs text-on-surface-variant mt-1">{{ field.help_text }}</p>{% endif %}
+    {% for error in field.errors %}<p class="text-xs text-tertiary mt-1">{{ error }}</p>{% endfor %}
+  </div>
+  {% endfor %}
+  <div class="flex gap-3 pt-4">
+    <button class="px-6 py-3 bg-primary text-white rounded-2xl font-bold">Save</button>
+    <a href="{% url 'admin_model_list' app_label model_name %}" class="px-6 py-3 bg-surface-container-high rounded-2xl font-bold">Cancel</a>
+  </div>
+</form>
+{% endblock %}
