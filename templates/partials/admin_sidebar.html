@@ -56,8 +56,9 @@
         {{ request.user.first_name|first|upper }}{{ request.user.last_name|first|upper }}
       </div>
       <div class="overflow-hidden">
-        <p class="text-xs font-bold truncate">{{ request.user.get_full_name|default:request.user.email }}</p>
-        <p class="text-[10px] text-on-surface-variant uppercase tracking-tighter">{% if request.user.is_superuser %}Superadmin{% else %}Staff{% endif %}</p>
+        <p class="text-xs font-bold truncate">{{ request.user.get_full_name|default:request.user.username }}</p>
+        <p class="text-[10px] text-on-surface-variant truncate">{{ request.user.email|default:"No email address" }}</p>
+        <p class="text-[10px] text-on-surface-variant uppercase tracking-tighter mt-1">{% if request.user.is_superuser %}Superadmin{% else %}Staff{% endif %}</p>
       </div>
     </div>
   </div>
