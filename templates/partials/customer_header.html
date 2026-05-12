@@ -42,12 +42,12 @@
           Admin
         </a>
         {% endif %}
-        <a href="{% url 'logout' %}" class="hidden md:flex items-center gap-1 px-3 py-2 bg-surface-container-high text-on-surface-variant rounded-full text-xs font-bold hover:bg-surface-container-highest transition-all">
+        <a href="{% url 'account_logout' %}" class="hidden md:flex items-center gap-1 px-3 py-2 bg-surface-container-high text-on-surface-variant rounded-full text-xs font-bold hover:bg-surface-container-highest transition-all">
           Logout
         </a>
       </div>
     {% else %}
-      <a href="{% url 'login' %}" class="hidden md:flex items-center gap-2 px-4 py-2 bg-surface-container-highest/50 rounded-full hover:bg-surface-container-highest transition-all">
+      <a href="{% url 'account_login' %}" class="hidden md:flex items-center gap-2 px-4 py-2 bg-surface-container-highest/50 rounded-full hover:bg-surface-container-highest transition-all">
         <span class="text-xs font-bold text-on-surface-variant uppercase tracking-tight">Sign In</span>
       </a>
     {% endif %}

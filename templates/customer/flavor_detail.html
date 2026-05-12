@@ -130,7 +130,7 @@
           </div>
         {% else %}
           <p class="mt-6 text-center text-gray-500">
-            <a href="{% url 'login' %}?next={{ request.path }}" class="font-semibold" style="color: var(--color-primary);">Log in</a> to leave a review.
+            <a href="{% url 'account_login' %}?next={{ request.path }}" class="font-semibold" style="color: var(--color-primary);">Log in</a> to leave a review.
           </p>
         {% endif %}
       </div>

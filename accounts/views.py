@@ -5,6 +5,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.utils.http import url_has_allowed_host_and_scheme
 from django.conf import settings
+from django.urls import get_resolver
 from django import forms
 from django.contrib.auth.models import User
 
@@ -65,14 +66,16 @@ def login_view(request):
         else:
             messages.error(request, 'Invalid username/email or password.')
     
-    google_enabled = False
-    google_config_error = False
     google_app = settings.SOCIALACCOUNT_PROVIDERS.get('google', {}).get('APP', {})
-    if google_app.get('client_id') and google_app.get('secret'):
+    google_enabled = bool(google_app.get('client_id') and google_app.get('secret'))
+    if google_enabled:
         try:
-            from allauth.socialaccount.models import SocialApp
-            google_enabled = SocialApp.objects.filter(provider='google').count() <= 1
-            google_config_error = not google_enabled
+            from allauth.socialaccount.providers.google import urls as google_urls  # noqa: F401
+            reverse_dict = get_resolver().reverse_dict
+            google_enabled = any(
+                isinstance(name, str) and name.startswith('google_')
+                for name in reverse_dict.keys()
+            )
         except Exception:
             google_enabled = False
     return render(
@@ -81,7 +84,6 @@ def login_view(request):
         {
             'next': next_url,
             'google_enabled': google_enabled,
-            'google_config_error': google_config_error,
         },
     )
 
