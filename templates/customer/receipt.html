@@ -3,58 +3,37 @@
 
 {% block extra_css %}
 <style>
-  .document-shell {
-    background:
-      radial-gradient(circle at top left, rgba(142,78,20,.08), transparent 28%),
-      linear-gradient(180deg, #fffdfa 0%, #ffffff 100%);
+  .receipt-paper {
+    background: #fff;
+    color: #24211d;
   }
-  .letterhead-band {
-    background:
-      linear-gradient(90deg, #1c1c17 0%, #3e2b19 34%, #8e4e14 100%);
+  .receipt-rule { border-color: rgba(36, 33, 29, .16); }
+  .receipt-table th {
+    background: #f4efe8;
+    color: #5f5549;
+    font-size: 10px;
+    letter-spacing: .16em;
+    text-transform: uppercase;
   }
-  .doc-watermark {
-    position: absolute; inset: auto 28px 24px auto; font-size: 92px; font-weight: 900;
-    color: rgba(142,78,20,.035); line-height: 1; pointer-events: none;
+  .receipt-table td, .receipt-table th {
+    padding: 10px 12px;
   }
-  .seal-wrap {
-    position: relative; width: 196px; height: 196px; transform: rotate(-11deg);
-    filter: saturate(.92) contrast(1.04);
-  }
-  .seal {
-    position: absolute; inset: 0; border-radius: 9999px; color: var(--seal-color);
-    border: 5px solid currentColor;
-    box-shadow:
-      inset 0 0 0 3px rgba(255,255,255,.72),
-      inset 0 0 0 12px currentColor,
-      inset 0 0 0 15px rgba(255,255,255,.78);
-    background:
-      radial-gradient(circle at 50% 50%, rgba(255,255,255,.0) 0 56%, rgba(255,255,255,.14) 57% 59%, transparent 60%),
-      repeating-radial-gradient(circle at 50% 50%, rgba(255,255,255,.08) 0 2px, transparent 2px 7px);
-    opacity: .88;
-    mix-blend-mode: multiply;
-  }
-  .seal::before,
-  .seal::after {
-    content: ""; position: absolute; inset: 18px; border-radius: 9999px; border: 2px dashed rgba(255,255,255,.55);
-  }
-  .seal-copy {
-    position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center;
-    color: var(--seal-color); text-transform: uppercase; font-family: "Courier New", monospace; mix-blend-mode: multiply;
-  }
-  .seal-copy strong { font-size: 34px; line-height: 1; font-weight: 900; letter-spacing: .12em; }
-  .seal-copy span { font-size: 10px; font-weight: 700; letter-spacing: .28em; margin-top: 8px; text-align: center; }
-  .seal-copy small { font-size: 9px; letter-spacing: .24em; margin-top: 7px; }
-  .stamp-paid { --seal-color: #0c7a43; }
-  .stamp-due { --seal-color: #bb152c; }
-  .print-letterhead { display: none; }
   @media print {
-    @page { margin: 14mm; }
-    body { background: #fff !important; }
+    @page { size: A4; margin: 10mm; }
+    html, body { background: #fff !important; }
     header, .print-hidden, #toast-container { display: none !important; }
-    .print-letterhead { display: flex; }
-    .document-shell { box-shadow: none !important; border: 0 !important; border-radius: 0 !important; }
-    .doc-watermark { display: block; }
-    .letterhead-band { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    main { padding: 0 !important; }
+    .receipt-paper {
+      width: 100%;
+      min-height: auto;
+      box-shadow: none !important;
+      border: 0 !important;
+      border-radius: 0 !important;
+    }
+    .receipt-table th {
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
   }
 </style>
 {% endblock %}
@@ -62,117 +41,97 @@
 {% block body %}
 <div class="min-h-screen bg-surface">
   {% include "partials/customer_header.html" %}
-  <main class="px-4 py-10">
-    <div class="print-letterhead max-w-4xl mx-auto mb-5 items-center justify-between border-b-2 border-on-surface pb-4">
-      <div>
-        <h1 class="text-2xl font-sans font-black">{{ site.store_name }}</h1>
-        <p class="text-xs">{{ site.address }} | {{ site.phone }} | {{ site.email }}</p>
-      </div>
-      <p class="font-mono text-xs">Receipt {{ order.order_number }}</p>
-    </div>
-
-    <section class="document-shell relative max-w-4xl mx-auto bg-white border border-outline-variant/30 rounded-[2rem] shadow-2xl overflow-hidden">
-      <div class="doc-watermark">SS</div>
-      <div class="letterhead-band px-8 md:px-10 py-5 text-white">
-        <div class="flex flex-col md:flex-row md:items-end justify-between gap-5">
+  <main class="px-4 py-8 print:py-0">
+    <section class="receipt-paper max-w-3xl mx-auto border border-outline-variant/30 rounded-2xl shadow-xl overflow-hidden">
+      <div class="px-6 py-5 bg-inverse-surface text-inverse-on-surface">
+        <div class="flex items-start justify-between gap-6">
           <div>
-            <p class="text-[10px] uppercase tracking-[0.35em] text-white/70 font-black">Savanna Scoops</p>
-            <h1 class="text-3xl md:text-4xl font-sans font-black tracking-tight mt-1">Customer Receipt</h1>
+            <p class="text-[10px] uppercase tracking-[0.24em] text-inverse-on-surface/60 font-black">Savanna Scoops</p>
+            <h1 class="text-2xl font-sans font-black mt-1">Customer Receipt</h1>
+            <p class="text-xs text-inverse-on-surface/70 mt-1">{{ site.address }} · {{ site.phone }}</p>
           </div>
-          <div class="text-xs md:text-sm text-white/80 md:text-right">
-            <p>{{ site.address }}</p>
-            <p>{{ site.phone }} · {{ site.email }}</p>
-          </div>
-        </div>
-      </div>
-      <div class="grid md:grid-cols-[1fr_260px]">
-        <div class="p-8 md:p-10">
-          <p class="text-[10px] uppercase tracking-[0.35em] text-secondary font-black">Official Receipt</p>
-          <h2 class="text-4xl font-sans font-black tracking-tight mt-2">Payment Received</h2>
-          <p class="text-sm text-on-surface-variant mt-2">This document confirms payment for your order and keeps the transaction code attached for reference.</p>
-        </div>
-        <div class="bg-inverse-surface text-inverse-on-surface p-8 md:p-10 flex md:flex-col justify-between gap-6">
-          <div>
-            <p class="text-[10px] uppercase tracking-widest text-inverse-on-surface/50">Receipt No.</p>
-            <p class="font-mono font-black text-xl mt-1">{{ order.order_number }}</p>
-          </div>
-          <div>
-            <p class="text-[10px] uppercase tracking-widest text-inverse-on-surface/50">Live Timestamp</p>
-            <p class="font-mono text-sm mt-1" id="liveStamp">{{ issued_at|date:"d M Y, H:i:s" }}</p>
+          <div class="text-right">
+            <p class="text-[10px] uppercase tracking-[0.18em] text-inverse-on-surface/60 font-black">Receipt No.</p>
+            <p class="font-mono font-black text-lg">{{ order.order_number }}</p>
+            <p class="text-xs text-inverse-on-surface/70 mt-1">{{ issued_at|date:"d M Y, H:i" }}</p>
           </div>
         </div>
       </div>
 
-      <div class="p-8 md:p-10 pt-0">
-        <div class="flex flex-col md:flex-row md:items-start justify-between gap-8 border-y border-outline-variant/20 py-8">
-          <div class="grid sm:grid-cols-2 gap-5 flex-1">
-            <div>
-              <p class="text-[10px] uppercase tracking-widest text-on-surface-variant font-black">Received From</p>
-              <p class="font-black mt-2">{{ order.customer_name }}</p>
-              <p class="text-sm text-on-surface-variant">{{ order.customer_email }}</p>
-              <p class="text-sm text-on-surface-variant">{{ order.customer_phone }}</p>
-            </div>
-            <div>
-              <p class="text-[10px] uppercase tracking-widest text-on-surface-variant font-black">Payment Details</p>
-              <p class="font-black mt-2">{{ order.payment_method }} · {{ order.payment_status|capfirst }}</p>
-              <p class="font-mono text-sm text-secondary font-black mt-1">{{ order.mpesa_receipt|default:"Pending" }}</p>
-            </div>
+      <div class="px-6 py-5">
+        <div class="grid grid-cols-2 gap-5 pb-5 border-b receipt-rule">
+          <div>
+            <p class="text-[10px] uppercase tracking-[0.18em] text-on-surface-variant font-black">Received From</p>
+            <p class="font-black mt-2">{{ order.customer_name }}</p>
+            <p class="text-xs text-on-surface-variant">{{ order.customer_email }}</p>
+            <p class="text-xs text-on-surface-variant">{{ order.customer_phone }}</p>
           </div>
-          <div class="seal-wrap {% if order.payment_status == 'paid' %}stamp-paid{% else %}stamp-due{% endif %}">
-            <div class="seal"></div>
-            <div class="seal-copy">
-              <small>Official Copy</small>
-              <strong>{% if order.payment_status == 'paid' %}Paid{% else %}Due{% endif %}</strong>
-              <span>{{ site.store_name }}</span>
+          <div class="text-right">
+            <p class="text-[10px] uppercase tracking-[0.18em] text-on-surface-variant font-black">Payment</p>
+            <p class="font-black mt-2">{{ order.payment_method }} · {{ order.payment_status|capfirst }}</p>
+            <p class="font-mono text-xs text-secondary font-black mt-1">{{ order.mpesa_receipt|default:"Pending" }}</p>
+            <p class="text-xs text-on-surface-variant mt-1">{{ order.get_status_display }}</p>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-5 py-4 border-b receipt-rule">
+          <div>
+            <p class="text-[10px] uppercase tracking-[0.18em] text-on-surface-variant font-black">Delivery Address</p>
+            <p class="text-sm font-semibold mt-1">{{ order.delivery_address }}</p>
+          </div>
+          <div class="text-right">
+            <p class="text-[10px] uppercase tracking-[0.18em] text-on-surface-variant font-black">Seller</p>
+            <p class="text-sm font-semibold mt-1">{{ site.store_name }}</p>
+            <p class="text-xs text-on-surface-variant">{{ site.email }}</p>
+          </div>
+        </div>
+
+        <table class="receipt-table w-full text-left mt-5 border border-outline-variant/20">
+          <thead>
+            <tr>
+              <th>Description</th>
+              <th class="text-center">Qty</th>
+              <th class="text-right">Unit</th>
+              <th class="text-right">Amount</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-outline-variant/10">
+            {% for item in order.items.all %}
+            <tr>
+              <td class="font-bold text-sm">{{ item.flavor_name }}</td>
+              <td class="text-center text-sm">{{ item.quantity }}</td>
+              <td class="text-right text-sm">KSh {{ item.price|floatformat:0 }}</td>
+              <td class="text-right text-sm font-black">KSh {{ item.subtotal|floatformat:0 }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+
+        <div class="grid grid-cols-[1fr_260px] gap-6 mt-5 items-end">
+          <div class="text-xs text-on-surface-variant leading-relaxed">
+            <p class="font-black text-on-surface uppercase tracking-[0.16em] text-[10px] mb-1">Note</p>
+            <p>This receipt confirms payment recorded for order {{ order.order_number }}. Keep the M-Pesa reference for support and reconciliation.</p>
+          </div>
+          <div class="border border-outline-variant/20">
+            <div class="flex justify-between px-4 py-2 text-sm"><span>Subtotal</span><strong>KSh {{ order.subtotal|floatformat:0 }}</strong></div>
+            <div class="flex justify-between px-4 py-2 text-sm border-t receipt-rule"><span>Delivery</span><strong>KSh {{ order.delivery_fee|floatformat:0 }}</strong></div>
+            <div class="flex justify-between px-4 py-3 bg-surface-container-low text-xl font-black border-t receipt-rule">
+              <span>Total</span><span class="text-secondary">KSh {{ order.total|floatformat:0 }}</span>
             </div>
           </div>
         </div>
 
-        <div class="mt-8 overflow-x-auto">
-          <table class="w-full text-left">
-            <thead>
-              <tr class="bg-surface-container-low">
-                <th class="p-4 text-xs uppercase tracking-widest text-on-surface-variant">Description</th>
-                <th class="p-4 text-xs uppercase tracking-widest text-on-surface-variant text-center">Qty</th>
-                <th class="p-4 text-xs uppercase tracking-widest text-on-surface-variant text-right">Amount</th>
-              </tr>
-            </thead>
-            <tbody class="divide-y divide-outline-variant/10">
-              {% for item in order.items.all %}
-              <tr>
-                <td class="p-4 font-bold">{{ item.flavor_name }}</td>
-                <td class="p-4 text-center">{{ item.quantity }}</td>
-                <td class="p-4 text-right font-bold">KSh {{ item.subtotal|floatformat:0 }}</td>
-              </tr>
-              {% endfor %}
-            </tbody>
-          </table>
+        <div class="mt-5 pt-4 border-t receipt-rule flex items-center justify-between gap-4">
+          <p class="text-[10px] uppercase tracking-[0.16em] text-on-surface-variant font-black">Thank you for choosing Savanna Scoops</p>
+          <p class="text-[10px] font-mono text-on-surface-variant">{{ site.phone }} · {{ site.email }}</p>
         </div>
 
-        <div class="mt-8 grid md:grid-cols-[1fr_320px] gap-8 items-end">
-          <p class="text-sm text-on-surface-variant">Thank you for choosing Savanna Scoops. This receipt was generated with a live timestamp and includes the recorded payment transaction code.</p>
-          <div class="bg-surface-container-low rounded-2xl p-5 space-y-3">
-            <div class="flex justify-between text-sm"><span>Subtotal</span><strong>KSh {{ order.subtotal|floatformat:0 }}</strong></div>
-            <div class="flex justify-between text-sm"><span>Delivery</span><strong>KSh {{ order.delivery_fee|floatformat:0 }}</strong></div>
-            <div class="flex justify-between text-2xl font-black border-t-2 border-dashed border-outline-variant/30 pt-4"><span>Total</span><span class="text-secondary">KSh {{ order.total|floatformat:0 }}</span></div>
-          </div>
-        </div>
-
-        <div class="mt-8 flex flex-wrap gap-3 print-hidden">
-          <button onclick="window.print()" class="px-6 py-3 bg-primary text-white rounded-2xl font-bold">Download / Print PDF</button>
-          <a href="{% url 'tracking' %}?order_id={{ order.order_number }}" class="px-6 py-3 bg-surface-container-high rounded-2xl font-bold">Track Order</a>
+        <div class="mt-5 flex flex-wrap gap-3 print-hidden">
+          <button onclick="window.print()" class="px-5 py-3 bg-primary text-white rounded-xl font-bold">Download / Print PDF</button>
+          <a href="{% url 'tracking' %}?order_id={{ order.order_number }}" class="px-5 py-3 bg-surface-container-high rounded-xl font-bold">Track Order</a>
         </div>
       </div>
     </section>
   </main>
 </div>
-{% endblock %}
-
-{% block extra_js %}
-<script>
-setInterval(() => {
-  const el = document.getElementById('liveStamp');
-  if (el) el.textContent = new Date().toLocaleString();
-}, 1000);
-</script>
 {% endblock %}

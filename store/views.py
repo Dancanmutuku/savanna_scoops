@@ -133,6 +133,7 @@ def cart_view(request):
     })
 
 
+@login_required
 def checkout(request):
     """Checkout page."""
     cart = request.session.get('cart', {})

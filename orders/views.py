@@ -14,6 +14,13 @@ from .models import Order, OrderItem, OrderStatusHistory
 @require_POST
 def create_order(request):
     """Create order from cart data."""
+    if not request.user.is_authenticated:
+        return JsonResponse({
+            'success': False,
+            'error': 'Please sign in or create an account before placing an order.',
+            'login_url': '/accounts/login/',
+        }, status=403)
+
     data = json.loads(request.body)
 
     cart = request.session.get('cart', {})
@@ -66,9 +73,11 @@ def create_order(request):
     })
 
 
+@login_required
 def order_confirmation(request, order_number):
     """Order confirmation page."""
-    order = get_object_or_404(Order, order_number=order_number)
+    orders = Order.objects.all() if request.user.is_staff else Order.objects.filter(user=request.user)
+    order = get_object_or_404(orders, order_number=order_number)
 
     request.session['cart'] = {}
     request.session.modified = True
@@ -76,9 +85,13 @@ def order_confirmation(request, order_number):
     return render(request, 'customer/order_confirmation.html', {'order': order})
 
 
+@login_required
 def receipt_view(request, order_number):
     """Customer receipt page."""
-    order = get_object_or_404(Order.objects.prefetch_related('items'), order_number=order_number)
+    orders = Order.objects.prefetch_related('items')
+    if not request.user.is_staff:
+        orders = orders.filter(user=request.user)
+    order = get_object_or_404(orders, order_number=order_number)
     return render(request, 'customer/receipt.html', {
         'order': order,
         'issued_at': timezone.localtime(),
@@ -86,9 +99,11 @@ def receipt_view(request, order_number):
     })
 
 
+@login_required
 def order_status_api(request, order_number):
     """Get order status as JSON."""
-    order = get_object_or_404(Order, order_number=order_number)
+    orders = Order.objects.all() if request.user.is_staff else Order.objects.filter(user=request.user)
+    order = get_object_or_404(orders, order_number=order_number)
     return JsonResponse({
         'order_number': order.order_number,
         'status': order.status,
@@ -103,4 +118,4 @@ def order_status_api(request, order_number):
 def my_orders(request):
     """Customer orders list."""
     orders = Order.objects.filter(user=request.user).prefetch_related('items')
-    return render(request, 'customer/my_orders.html', {'orders': orders})
+    return render(request, 'customer/my_orders.html', {'orders': orders, 'active_section': 'orders'})
