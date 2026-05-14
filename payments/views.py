@@ -20,6 +20,13 @@ def _fallback_code(prefix, value):
     return f'{prefix}-{suffix}'
 
 
+def _result_code_as_int(result_code):
+    try:
+        return int(result_code)
+    except (TypeError, ValueError):
+        return None
+
+
 def _mark_order_paid(order, method, transaction_code, note=None):
     with transaction.atomic():
         was_paid = order.payment_status == 'paid'
@@ -104,21 +111,27 @@ def check_payment_status(request):
         })
     
     # Query M-Pesa
-    result = query_stk_status(checkout_request_id)
-    result_code = result.get('ResultCode')
+    try:
+        result = query_stk_status(checkout_request_id)
+    except Exception:
+        logger.exception("Unexpected M-Pesa status check failure for %s.", checkout_request_id)
+        result = {'success': False, 'error': 'Payment status is temporarily unavailable'}
+
+    result_code = _result_code_as_int(result.get('ResultCode'))
     
     if result_code == 0:
-        txn.status = 'success'
-        txn.result_code = 0
-        txn.mpesa_receipt_number = txn.mpesa_receipt_number or _fallback_code('MPESA', checkout_request_id)
-        txn.save()
-        if txn.order:
-            _mark_order_paid(
-                txn.order,
-                'M-Pesa',
-                txn.mpesa_receipt_number,
-                f'Payment received via M-Pesa. Receipt: {txn.mpesa_receipt_number}',
-            )
+        with transaction.atomic():
+            txn.status = 'success'
+            txn.result_code = 0
+            txn.mpesa_receipt_number = txn.mpesa_receipt_number or _fallback_code('MPESA', checkout_request_id)
+            txn.save()
+            if txn.order:
+                _mark_order_paid(
+                    txn.order,
+                    'M-Pesa',
+                    txn.mpesa_receipt_number,
+                    f'Payment received via M-Pesa. Receipt: {txn.mpesa_receipt_number}',
+                )
         return JsonResponse({
             'success': True,
             'status': 'success',
@@ -127,11 +140,12 @@ def check_payment_status(request):
         })
     
     elif result_code == 1032:
-        txn.status = 'cancelled'
-        txn.result_desc = 'User cancelled'
-        txn.save()
-        if txn.order:
-            _mark_order_cancelled(txn.order, 'M-Pesa prompt was cancelled by the customer.')
+        with transaction.atomic():
+            txn.status = 'cancelled'
+            txn.result_desc = 'User cancelled'
+            txn.save()
+            if txn.order:
+                _mark_order_cancelled(txn.order, 'M-Pesa prompt was cancelled by the customer.')
         return JsonResponse({'success': False, 'status': 'cancelled', 'error': 'Payment has been canceled.'})
     
     return JsonResponse({'success': False, 'status': 'pending', 'message': 'Waiting for payment...'})
@@ -161,7 +175,9 @@ def mpesa_callback(request):
         txn.result_code = result_code
         txn.result_desc = result_desc
         
-        if result_code == 0:
+        result_code_int = _result_code_as_int(result_code)
+
+        if result_code_int == 0:
             # Payment successful
             callback_metadata = callback.get('CallbackMetadata', {}).get('Item', [])
             receipt = ''
@@ -170,17 +186,21 @@ def mpesa_callback(request):
                     receipt = item.get('Value', '')
             receipt = receipt or _fallback_code('MPESA', checkout_request_id)
             
-            txn.status = 'success'
-            txn.mpesa_receipt_number = receipt
-            txn.save()
-            
-            if txn.order:
-                _mark_order_paid(txn.order, 'M-Pesa', receipt, f'M-Pesa payment confirmed. Receipt: {receipt}')
-        elif result_code == 1032:
-            txn.status = 'cancelled'
-            txn.save()
-            if txn.order:
-                _mark_order_cancelled(txn.order, 'M-Pesa prompt was cancelled by the customer.')
+            with transaction.atomic():
+                txn.status = 'success'
+                txn.result_code = result_code_int
+                txn.mpesa_receipt_number = receipt
+                txn.save()
+
+                if txn.order:
+                    _mark_order_paid(txn.order, 'M-Pesa', receipt, f'M-Pesa payment confirmed. Receipt: {receipt}')
+        elif result_code_int == 1032:
+            with transaction.atomic():
+                txn.status = 'cancelled'
+                txn.result_code = result_code_int
+                txn.save()
+                if txn.order:
+                    _mark_order_cancelled(txn.order, 'M-Pesa prompt was cancelled by the customer.')
         else:
             txn.status = 'failed'
             txn.save()

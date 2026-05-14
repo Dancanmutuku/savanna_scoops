@@ -1,7 +1,23 @@
 import requests
 import base64
+import logging
 from datetime import datetime
 from django.conf import settings
+
+logger = logging.getLogger(__name__)
+
+
+def _safe_json_response(response, context):
+    try:
+        return response.json()
+    except ValueError:
+        logger.warning(
+            "M-Pesa %s returned non-JSON response. Status: %s, Body: %r",
+            context,
+            response.status_code,
+            response.text[:500],
+        )
+        return None
 
 
 def get_mpesa_access_token():
@@ -15,12 +31,31 @@ def get_mpesa_access_token():
         f"{settings.MPESA_CONSUMER_KEY}:{settings.MPESA_CONSUMER_SECRET}".encode()
     ).decode()
     
-    response = requests.get(
-        url,
-        headers={'Authorization': f'Basic {credentials}'},
-        timeout=10
-    )
-    return response.json().get('access_token')
+    try:
+        response = requests.get(
+            url,
+            headers={'Authorization': f'Basic {credentials}'},
+            timeout=10
+        )
+        data = _safe_json_response(response, 'token request')
+        if not data:
+            return None
+
+        if response.status_code >= 400:
+            logger.warning(
+                "M-Pesa token request failed. Status: %s, Response: %s",
+                response.status_code,
+                data,
+            )
+            return None
+
+        token = data.get('access_token')
+        if not token:
+            logger.warning("M-Pesa token response did not include access_token: %s", data)
+        return token
+    except requests.exceptions.RequestException:
+        logger.exception("M-Pesa token request failed.")
+        return None
 
 
 def get_stk_password():
@@ -78,7 +113,9 @@ def initiate_stk_push(phone_number: str, amount: float, order_number: str, accou
             },
             timeout=30
         )
-        data = response.json()
+        data = _safe_json_response(response, 'STK push request')
+        if data is None:
+            return {'success': False, 'error': 'M-Pesa returned an invalid response'}
         
         if data.get('ResponseCode') == '0':
             return {
@@ -95,6 +132,7 @@ def initiate_stk_push(phone_number: str, amount: float, order_number: str, accou
                 'data': data,
             }
     except requests.exceptions.RequestException as e:
+        logger.exception("M-Pesa STK push request failed.")
         return {'success': False, 'error': str(e)}
 
 
@@ -125,6 +163,14 @@ def query_stk_status(checkout_request_id: str):
             headers={'Authorization': f'Bearer {access_token}'},
             timeout=15
         )
-        return response.json()
-    except Exception as e:
+        data = _safe_json_response(response, 'STK status query')
+        if data is None:
+            return {
+                'success': False,
+                'status': 'pending',
+                'error': 'M-Pesa returned an invalid response',
+            }
+        return data
+    except requests.exceptions.RequestException as e:
+        logger.exception("M-Pesa STK status query failed.")
         return {'success': False, 'error': str(e)}
