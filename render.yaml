@@ -10,6 +10,8 @@ services:
         value: "False"
       - key: SECRET_KEY
         generateValue: true
+      - key: PYTHON_VERSION
+        value: 3.13.5
       - key: ALLOWED_HOSTS
         value: savanna-scoops.onrender.com
       - key: CSRF_TRUSTED_ORIGINS
