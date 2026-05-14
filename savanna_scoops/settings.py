@@ -171,6 +171,11 @@ EMAIL_USE_TLS = config('EMAIL_USE_TLS', default=True, cast=bool)
 EMAIL_HOST_USER = config('EMAIL_HOST_USER', default='')
 EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD', default='')
 DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL', default='noreply@savanascoops.com')
+DEFAULT_FROM_NAME = config('DEFAULT_FROM_NAME', default='Savanna Scoops')
+EMAIL_DELIVERY_BACKEND = config('EMAIL_DELIVERY_BACKEND', default='brevo' if not DEBUG else 'smtp')
+EMAIL_SEND_ASYNC = config('EMAIL_SEND_ASYNC', default='True' if not DEBUG else 'False', cast=bool)
+BREVO_API_KEY = config('BREVO_API_KEY', default='')
+BREVO_API_URL = config('BREVO_API_URL', default='https://api.brevo.com/v3/smtp/email')
 
 # Crispy Forms
 CRISPY_ALLOWED_TEMPLATE_PACKS = 'bootstrap5'

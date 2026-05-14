@@ -10,7 +10,7 @@ import logging
 from .models import MpesaTransaction
 from .mpesa import initiate_stk_push, query_stk_status
 from orders.models import Order, OrderStatusHistory
-from orders.emails import send_order_confirmation_email
+from orders.emails import queue_order_confirmation_email
 
 logger = logging.getLogger(__name__)
 
@@ -34,7 +34,7 @@ def _mark_order_paid(order, method, transaction_code, note=None):
             note=note or f'{method} payment confirmed. Transaction: {transaction_code}',
         )
         if not was_paid:
-            transaction.on_commit(lambda: send_order_confirmation_email(order.id))
+            transaction.on_commit(lambda: queue_order_confirmation_email(order.id))
 
 
 def _mark_order_cancelled(order, note):

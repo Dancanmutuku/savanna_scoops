@@ -31,10 +31,8 @@ This project includes:
    - `MPESA_SHORTCODE`
    - `MPESA_PASSKEY`
    - `MPESA_CALLBACK_URL`
-   - `EMAIL_HOST`
-   - `EMAIL_HOST_USER`
-   - `EMAIL_HOST_PASSWORD`
    - `DEFAULT_FROM_EMAIL`
+   - `BREVO_API_KEY`
 5. Update:
    - `ALLOWED_HOSTS`
    - `CSRF_TRUSTED_ORIGINS`
@@ -45,3 +43,6 @@ This project includes:
 - The app uses SQLite locally and Postgres automatically when `DATABASE_URL` is present.
 - `build.sh` installs dependencies and collects static files during the Render build step.
 - Database migrations run in the Render start command.
+- Local development keeps using SMTP from `.env`.
+- Deployment uses Brevo's SMTP API when `EMAIL_DELIVERY_BACKEND=brevo`.
+- Order confirmation emails are queued onto a background thread after payment is committed, so the request can finish without waiting for the email API call.

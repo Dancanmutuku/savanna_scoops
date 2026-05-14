@@ -48,3 +48,13 @@ services:
         sync: false
       - key: DEFAULT_FROM_EMAIL
         sync: false
+      - key: DEFAULT_FROM_NAME
+        value: Savanna Scoops
+      - key: EMAIL_DELIVERY_BACKEND
+        value: brevo
+      - key: EMAIL_SEND_ASYNC
+        value: "True"
+      - key: BREVO_API_KEY
+        sync: false
+      - key: BREVO_API_URL
+        value: https://api.brevo.com/v3/smtp/email

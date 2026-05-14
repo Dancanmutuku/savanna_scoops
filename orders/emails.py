@@ -1,5 +1,7 @@
 import logging
+import threading
 
+import requests
 from django.conf import settings
 from django.core.mail import send_mail
 from django.template.loader import render_to_string
@@ -7,6 +9,28 @@ from django.template.loader import render_to_string
 from .models import Order
 
 logger = logging.getLogger(__name__)
+
+
+def _send_via_brevo(subject, body, recipient_email):
+    response = requests.post(
+        settings.BREVO_API_URL,
+        headers={
+            'accept': 'application/json',
+            'api-key': settings.BREVO_API_KEY,
+            'content-type': 'application/json',
+        },
+        json={
+            'sender': {
+                'name': settings.DEFAULT_FROM_NAME,
+                'email': settings.DEFAULT_FROM_EMAIL,
+            },
+            'to': [{'email': recipient_email}],
+            'subject': subject,
+            'htmlContent': body,
+        },
+        timeout=15,
+    )
+    response.raise_for_status()
 
 
 def send_order_confirmation_email(order_id):
@@ -23,13 +47,30 @@ def send_order_confirmation_email(order_id):
     subject = f"Order Confirmed - {order.order_number} | Savanna Scoops"
     body = render_to_string('emails/order_confirmation.html', {'order': order})
     try:
-        send_mail(
-            subject,
-            '',
-            settings.DEFAULT_FROM_EMAIL,
-            [order.customer_email],
-            html_message=body,
-            fail_silently=False,
-        )
+        if settings.EMAIL_DELIVERY_BACKEND == 'brevo' and settings.BREVO_API_KEY:
+            _send_via_brevo(subject, body, order.customer_email)
+        else:
+            send_mail(
+                subject,
+                '',
+                settings.DEFAULT_FROM_EMAIL,
+                [order.customer_email],
+                html_message=body,
+                fail_silently=False,
+            )
     except Exception:
         logger.exception("Failed to send confirmation email for %s.", order.order_number)
+
+
+def queue_order_confirmation_email(order_id):
+    if settings.EMAIL_SEND_ASYNC:
+        thread = threading.Thread(
+            target=send_order_confirmation_email,
+            args=(order_id,),
+            daemon=True,
+            name=f'order-email-{order_id}',
+        )
+        thread.start()
+        return
+
+    send_order_confirmation_email(order_id)
