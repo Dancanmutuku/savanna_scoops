@@ -1,45 +1,45 @@
-{% extends 'base.html' %}
-{% block title %}{{ flavor.name }} – Savanna Scoops{% endblock %}
+{% extends "base.html" %}
+{% block title %}{{ flavor.name }} - Savanna Scoops{% endblock %}
 
-{% block content %}
-{% include 'partials/customer_header.html' %}
+{% block body %}
+{% include "partials/customer_header.html" %}
 
-<main class="min-h-screen pt-20" style="background: var(--color-surface);">
-
-  <!-- Hero Section -->
-  <section class="relative overflow-hidden" style="background: linear-gradient(135deg, #1a0a00 0%, #3d1a08 50%, #6b3010 100%); min-height: 420px;">
+<main class="min-h-screen pt-24 md:pt-20" style="background: var(--color-surface);">
+  <section class="relative overflow-hidden" style="background: linear-gradient(135deg, #1a0a00 0%, #3d1a08 50%, #6b3010 100%);">
     <div class="absolute inset-0 opacity-10">
-      <div class="absolute top-10 right-20 w-64 h-64 rounded-full" style="background: radial-gradient(circle, #ff9500, transparent);"></div>
-      <div class="absolute bottom-10 left-20 w-48 h-48 rounded-full" style="background: radial-gradient(circle, #e44d26, transparent);"></div>
+      <div class="absolute top-8 right-4 sm:right-20 w-40 h-40 sm:w-64 sm:h-64 rounded-full" style="background: radial-gradient(circle, #ff9500, transparent);"></div>
+      <div class="absolute bottom-10 left-4 sm:left-20 w-32 h-32 sm:w-48 sm:h-48 rounded-full" style="background: radial-gradient(circle, #e44d26, transparent);"></div>
     </div>
-    <div class="relative max-w-6xl mx-auto px-4 py-16 flex flex-col md:flex-row items-center gap-12">
-      <!-- Image -->
-      <div class="w-64 h-64 rounded-3xl overflow-hidden shadow-2xl flex-shrink-0 border-4 border-white border-opacity-20">
+
+    <div class="relative max-w-6xl mx-auto px-4 sm:px-6 py-12 sm:py-16 flex flex-col md:flex-row items-center md:items-start gap-8 sm:gap-12">
+      <div class="w-48 h-48 sm:w-64 sm:h-64 rounded-3xl overflow-hidden shadow-2xl flex-shrink-0 border-4 border-white/20">
         {% if flavor.display_image %}
           <img src="{{ flavor.display_image }}" alt="{{ flavor.name }}" class="w-full h-full object-cover">
         {% else %}
-          <div class="w-full h-full flex items-center justify-center text-8xl" style="background-color: {{ flavor.color_hex }};">🍦</div>
+          <div class="w-full h-full flex items-center justify-center text-6xl sm:text-8xl" style="background-color: {{ flavor.color_hex }};">🍦</div>
         {% endif %}
       </div>
-      <!-- Info -->
-      <div class="text-white flex-1">
-        <div class="flex items-center gap-3 mb-3">
+
+      <div class="text-white flex-1 min-w-0 text-center md:text-left">
+        <div class="flex flex-wrap items-center justify-center md:justify-start gap-3 mb-3">
           {% if flavor.category %}
-            <span class="text-xs font-semibold uppercase tracking-widest px-3 py-1 rounded-full" style="background:rgba(255,255,255,0.15);">{{ flavor.category.name }}</span>
+            <span class="text-xs font-semibold uppercase tracking-widest px-3 py-1 rounded-full" style="background: rgba(255,255,255,0.15);">{{ flavor.category.name }}</span>
           {% endif %}
           {% if flavor.is_dairy_free %}
-            <span class="text-xs font-semibold uppercase tracking-widest px-3 py-1 rounded-full bg-green-500 bg-opacity-80">🌱 Dairy-Free</span>
+            <span class="text-xs font-semibold uppercase tracking-widest px-3 py-1 rounded-full bg-green-500/80">Dairy-Free</span>
           {% endif %}
         </div>
-        <h1 class="text-4xl md:text-5xl font-bold mb-4" style="font-family: 'Playfair Display', serif;">{{ flavor.name }}</h1>
-        <p class="text-lg opacity-80 mb-6 max-w-xl leading-relaxed">{{ flavor.description }}</p>
-        <div class="flex items-center gap-6 flex-wrap">
-          <div class="text-4xl font-bold" style="color: var(--color-primary);">KES {{ flavor.price }}</div>
+
+        <h1 class="text-3xl sm:text-4xl md:text-5xl font-bold mb-4" style="font-family: 'Playfair Display', serif;">{{ flavor.name }}</h1>
+        <p class="text-base sm:text-lg opacity-80 mb-6 max-w-xl leading-relaxed mx-auto md:mx-0">{{ flavor.description }}</p>
+
+        <div class="flex flex-wrap items-center justify-center md:justify-start gap-4 sm:gap-6">
+          <div class="text-3xl sm:text-4xl font-bold" style="color: var(--color-primary);">KES {{ flavor.price }}</div>
           <div class="flex items-center gap-1">
             {% for i in "12345" %}
-              <span class="text-xl {% if forloop.counter <= flavor.rating|floatformat:0|add:0 %}text-yellow-400{% else %}text-gray-500{% endif %}">★</span>
+              <span class="text-xl {% if forloop.counter <= flavor.rating|floatformat:0|add:0 %}text-yellow-400{% else %}text-gray-500{% endif %}">&#9733;</span>
             {% endfor %}
-            <span class="ml-2 opacity-70">({{ reviews.count }} reviews)</span>
+            <span class="ml-2 opacity-70 text-sm sm:text-base">({{ reviews.count }} reviews)</span>
           </div>
           {% if flavor.status == 'out' %}
             <span class="px-4 py-2 rounded-full text-sm font-bold bg-red-500">Out of Stock</span>
@@ -49,52 +49,47 @@
             <span class="px-4 py-2 rounded-full text-sm font-bold bg-green-500">In Stock</span>
           {% endif %}
         </div>
+
         {% if flavor.status != 'out' %}
-          <button onclick="addToCart({{ flavor.id }}, '{{ flavor.name }}')"
-            class="mt-8 px-8 py-4 rounded-2xl font-bold text-white text-lg transition-all hover:scale-105 active:scale-95 shadow-lg"
-            style="background: var(--color-primary);">
-            🛒 Add to Cart — KES {{ flavor.price }}
+          <button onclick="addToCart({{ flavor.id }}, '{{ flavor.name|escapejs }}')" class="mt-8 w-full sm:w-auto px-8 py-4 rounded-2xl font-bold text-white text-base sm:text-lg transition-all hover:scale-105 active:scale-95 shadow-lg" style="background: var(--color-primary);">
+            Add to Cart - KES {{ flavor.price }}
           </button>
         {% endif %}
       </div>
     </div>
   </section>
 
-  <!-- Details + Reviews -->
-  <div class="max-w-6xl mx-auto px-4 py-16 grid md:grid-cols-3 gap-12">
-    <!-- Left: Details -->
-    <div class="md:col-span-2 space-y-10">
-      <!-- About -->
-      <div class="sculpted-card p-8">
+  <div class="max-w-6xl mx-auto px-4 sm:px-6 py-10 sm:py-16 grid grid-cols-1 md:grid-cols-3 gap-8 sm:gap-12">
+    <div class="md:col-span-2 space-y-8 sm:space-y-10">
+      <div class="sculpted-card p-5 sm:p-8">
         <h2 class="text-2xl font-bold mb-4" style="font-family: 'Playfair Display', serif; color: var(--color-dark);">About This Flavor</h2>
         <p class="leading-relaxed text-gray-600">{{ flavor.description }}</p>
         {% if flavor.allergens %}
           <div class="mt-6 p-4 rounded-xl bg-yellow-50 border border-yellow-200">
-            <p class="text-sm font-semibold text-yellow-800">⚠️ Allergens: {{ flavor.allergens }}</p>
+            <p class="text-sm font-semibold text-yellow-800">Allergens: {{ flavor.allergens }}</p>
           </div>
         {% endif %}
       </div>
 
-      <!-- Reviews -->
-      <div class="sculpted-card p-8">
+      <div class="sculpted-card p-5 sm:p-8">
         <h2 class="text-2xl font-bold mb-6" style="font-family: 'Playfair Display', serif; color: var(--color-dark);">Customer Reviews</h2>
         {% if reviews %}
           <div class="space-y-6">
             {% for review in reviews %}
               <div class="border-b border-gray-100 pb-6 last:border-0">
-                <div class="flex items-center justify-between mb-2">
-                  <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-sm" style="background: var(--color-primary);">
+                <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-2">
+                  <div class="flex items-center gap-3 min-w-0">
+                    <div class="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-sm flex-shrink-0" style="background: var(--color-primary);">
                       {{ review.user.first_name|first|default:review.user.email|first|upper }}
                     </div>
-                    <div>
-                      <p class="font-semibold text-gray-800">{{ review.user.first_name|default:review.user.email }}</p>
+                    <div class="min-w-0">
+                      <p class="font-semibold text-gray-800 truncate">{{ review.user.first_name|default:review.user.email }}</p>
                       <p class="text-xs text-gray-400">{{ review.created_at|date:"M d, Y" }}</p>
                     </div>
                   </div>
                   <div class="flex">
                     {% for i in "12345" %}
-                      <span class="{% if forloop.counter <= review.rating %}text-yellow-400{% else %}text-gray-300{% endif %}">★</span>
+                      <span class="{% if forloop.counter <= review.rating %}text-yellow-400{% else %}text-gray-300{% endif %}">&#9733;</span>
                     {% endfor %}
                   </div>
                 </div>
@@ -106,24 +101,22 @@
           <p class="text-gray-400 text-center py-8">No reviews yet. Be the first to review this flavor!</p>
         {% endif %}
 
-        <!-- Submit Review Form -->
         {% if user.is_authenticated %}
           <div class="mt-8 pt-8 border-t border-gray-100">
             <h3 class="font-bold text-lg mb-4" style="color: var(--color-dark);">Write a Review</h3>
             <form method="post" action="{% url 'submit_review' flavor.slug %}">
               {% csrf_token %}
-              <div class="flex items-center gap-2 mb-4">
+              <div class="flex flex-wrap items-center gap-2 mb-4">
                 <span class="text-gray-600 mr-2">Rating:</span>
                 {% for i in "12345" %}
                   <label class="cursor-pointer">
                     <input type="radio" name="rating" value="{{ forloop.counter }}" class="sr-only" required>
-                    <span class="text-2xl star-btn" onclick="setRating({{ forloop.counter }})">☆</span>
+                    <span class="text-2xl star-btn" onclick="setRating({{ forloop.counter }})">&#9734;</span>
                   </label>
                 {% endfor %}
               </div>
-              <textarea name="comment" rows="4" placeholder="Share your experience..."
-                class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-orange-400 resize-none mb-4"></textarea>
-              <button type="submit" class="px-6 py-3 rounded-xl font-bold text-white" style="background: var(--color-primary);">
+              <textarea name="comment" rows="4" placeholder="Share your experience..." class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-orange-400 resize-none mb-4"></textarea>
+              <button type="submit" class="w-full sm:w-auto px-6 py-3 rounded-xl font-bold text-white" style="background: var(--color-primary);">
                 Submit Review
               </button>
             </form>
@@ -136,34 +129,31 @@
       </div>
     </div>
 
-    <!-- Right: Sidebar -->
     <div class="space-y-6">
-      <!-- Quick Stats -->
-      <div class="sculpted-card p-6">
+      <div class="sculpted-card p-5 sm:p-6">
         <h3 class="font-bold text-gray-800 mb-4">Flavor Details</h3>
         <div class="space-y-3 text-sm">
-          <div class="flex justify-between">
+          <div class="flex justify-between gap-4">
             <span class="text-gray-500">Category</span>
-            <span class="font-semibold">{{ flavor.category.name|default:"Uncategorized" }}</span>
+            <span class="font-semibold text-right">{{ flavor.category.name|default:"Uncategorized" }}</span>
           </div>
-          <div class="flex justify-between">
+          <div class="flex justify-between gap-4">
             <span class="text-gray-500">Dairy-Free</span>
-            <span class="font-semibold">{% if flavor.is_dairy_free %}Yes 🌱{% else %}No{% endif %}</span>
+            <span class="font-semibold text-right">{% if flavor.is_dairy_free %}Yes{% else %}No{% endif %}</span>
           </div>
-          <div class="flex justify-between">
+          <div class="flex justify-between gap-4">
             <span class="text-gray-500">Total Sales</span>
-            <span class="font-semibold">{{ flavor.total_sales }} scoops</span>
+            <span class="font-semibold text-right">{{ flavor.total_sales }} scoops</span>
           </div>
-          <div class="flex justify-between">
+          <div class="flex justify-between gap-4">
             <span class="text-gray-500">Rating</span>
-            <span class="font-semibold">{{ flavor.rating }}/5.0 ★</span>
+            <span class="font-semibold text-right">{{ flavor.rating }}/5.0 &#9733;</span>
           </div>
         </div>
       </div>
 
-      <!-- Related Flavors -->
       {% if related %}
-        <div class="sculpted-card p-6">
+        <div class="sculpted-card p-5 sm:p-6">
           <h3 class="font-bold text-gray-800 mb-4">You Might Also Like</h3>
           <div class="space-y-4">
             {% for rel in related %}
@@ -175,8 +165,8 @@
                     <div class="w-full h-full flex items-center justify-center" style="background-color: {{ rel.color_hex }};">🍦</div>
                   {% endif %}
                 </div>
-                <div>
-                  <p class="font-semibold text-sm group-hover:text-orange-600 transition-colors">{{ rel.name }}</p>
+                <div class="min-w-0">
+                  <p class="font-semibold text-sm group-hover:text-orange-600 transition-colors truncate">{{ rel.name }}</p>
                   <p class="text-xs text-gray-400">KES {{ rel.price }}</p>
                 </div>
               </a>
@@ -186,13 +176,12 @@
       {% endif %}
     </div>
   </div>
-
 </main>
 
 <script>
 function setRating(val) {
   document.querySelectorAll('.star-btn').forEach((s, i) => {
-    s.textContent = i < val ? '★' : '☆';
+    s.textContent = i < val ? '\u2605' : '\u2606';
     s.style.color = i < val ? '#f59e0b' : '#9ca3af';
   });
   const inputs = document.querySelectorAll('input[name="rating"]');
@@ -208,10 +197,12 @@ function addToCart(flavorId, name) {
   .then(r => r.json())
   .then(data => {
     if (data.success) {
-      showToast(name + ' added to cart! 🍦', 'success');
-      document.querySelectorAll('.cart-count').forEach(el => el.textContent = data.cart_count);
-      const badge = document.getElementById('cart-badge');
-      if (badge) { badge.textContent = data.cart_count; badge.classList.remove('hidden'); }
+      showToast(name + ' added to cart!', 'success');
+      const badge = document.querySelector('.cart-badge');
+      if (badge) {
+        badge.textContent = data.cart_count;
+        badge.classList.remove('hidden');
+      }
     }
   });
 }

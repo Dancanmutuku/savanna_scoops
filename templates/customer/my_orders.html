@@ -1,12 +1,12 @@
-{% extends 'base.html' %}
-{% block title %}My Orders – Savanna Scoops{% endblock %}
+{% extends "base.html" %}
+{% block title %}My Orders - Savanna Scoops{% endblock %}
 
 {% block body %}
-{% include 'partials/customer_header.html' %}
+{% include "partials/customer_header.html" %}
 
 <main class="min-h-screen pt-24 pb-16" style="background: var(--color-surface);">
-  <div class="max-w-4xl mx-auto px-4">
-    <h1 class="text-4xl font-bold mb-2" style="font-family:'Playfair Display',serif; color:var(--color-dark);">My Orders</h1>
+  <div class="max-w-4xl mx-auto px-4 sm:px-6">
+    <h1 class="text-3xl sm:text-4xl font-bold mb-2" style="font-family:'Playfair Display',serif; color:var(--color-dark);">My Orders</h1>
     <p class="text-gray-500 mb-10">Your complete order history at Savanna Scoops</p>
     <div class="mb-8">
       <a href="{% url 'profile_detail' user.username %}" class="inline-flex items-center gap-2 px-5 py-3 rounded-2xl bg-surface-container-high font-bold text-on-surface hover:bg-surface-container-highest transition-colors">
@@ -18,8 +18,7 @@
       <div class="space-y-6">
         {% for order in orders %}
           <div class="sculpted-card overflow-hidden">
-            <div class="p-6 flex flex-col md:flex-row md:items-center gap-4">
-              <!-- Order Info -->
+            <div class="p-5 sm:p-6 flex flex-col md:flex-row md:items-center gap-4">
               <div class="flex-1">
                 <div class="flex items-center gap-3 mb-2 flex-wrap">
                   <span class="font-bold text-lg" style="color:var(--color-dark);">#{{ order.order_number }}</span>
@@ -40,19 +39,14 @@
                 <div class="flex flex-wrap gap-2">
                   {% for item in order.items.all %}
                     <span class="text-sm bg-gray-100 rounded-lg px-3 py-1">
-                      {{ item.quantity }}× {{ item.flavor_name }}
+                      {{ item.quantity }}x {{ item.flavor_name }}
                     </span>
                   {% endfor %}
                 </div>
               </div>
-              <!-- Total + Action -->
-              <div class="flex flex-col items-end gap-3">
+              <div class="flex flex-col items-start md:items-end gap-3">
                 <div class="text-2xl font-bold" style="color:var(--color-primary);">KES {{ order.total }}</div>
-                <a href="{% url 'tracking' %}?order_id={{ order.order_number }}"
-                  class="text-sm px-4 py-2 rounded-xl border-2 font-semibold transition-colors hover:text-white"
-                  style="border-color:var(--color-primary); color:var(--color-primary);"
-                  onmouseover="this.style.background='var(--color-primary)'"
-                  onmouseout="this.style.background='transparent'">
+                <a href="{% url 'tracking' %}?order_id={{ order.order_number }}" class="text-sm px-4 py-2 rounded-xl border-2 font-semibold transition-colors hover:text-white" style="border-color:var(--color-primary); color:var(--color-primary);" onmouseover="this.style.background='var(--color-primary)'" onmouseout="this.style.background='transparent'">
                   Track Order
                 </a>
                 {% if order.payment_status == 'paid' %}
@@ -62,22 +56,19 @@
                 {% endif %}
               </div>
             </div>
-            <!-- Progress bar -->
             <div class="h-1.5 bg-gray-100">
-              <div class="h-full rounded-full transition-all"
-                style="width: {{ order.status_percentage }}%; background: linear-gradient(90deg, var(--color-primary), var(--color-secondary));"></div>
+              <div class="h-full rounded-full transition-all" style="width: {{ order.status_percentage }}%; background: linear-gradient(90deg, var(--color-primary), var(--color-secondary));"></div>
             </div>
           </div>
         {% endfor %}
       </div>
     {% else %}
       <div class="text-center py-24">
-        <div class="text-8xl mb-6">🍦</div>
+        <div class="text-7xl sm:text-8xl mb-6">🍦</div>
         <h2 class="text-2xl font-bold mb-3" style="color:var(--color-dark);">No orders yet</h2>
         <p class="text-gray-500 mb-8">Your order history will appear here once you've placed your first order.</p>
-        <a href="{% url 'shop' %}" class="inline-flex items-center gap-2 px-8 py-4 rounded-2xl text-white font-bold text-lg"
-          style="background:var(--color-primary);">
-          🛒 Start Shopping
+        <a href="{% url 'shop' %}" class="inline-flex items-center gap-2 px-8 py-4 rounded-2xl text-white font-bold text-lg" style="background:var(--color-primary);">
+          Start Shopping
         </a>
       </div>
     {% endif %}

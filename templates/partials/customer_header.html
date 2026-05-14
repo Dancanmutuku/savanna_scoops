@@ -1,56 +1,69 @@
 {% load static %}
-<header class="bg-white/80 backdrop-blur-md border-b border-[#d8c2b5]/30 px-4 md:px-10 py-4 flex items-center justify-between sticky top-0 z-50 shadow-sm">
-  <!-- Logo -->
-  <a href="{% url 'shop' %}" class="flex items-center gap-3">
-    <div class="w-10 h-10 bg-secondary rounded-xl flex items-center justify-center shadow-lg shadow-secondary/20">
-      <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg>
-    </div>
-    <div class="hidden md:block">
-      <h1 class="font-sans font-bold text-lg leading-tight tracking-tight text-on-surface">Savanna Scoops</h1>
-      <div class="flex items-center gap-1 text-[10px] text-secondary font-bold uppercase tracking-widest">
-        <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-        Westlands, Nairobi
-      </div>
-    </div>
-  </a>
-
-  <!-- Nav -->
-  <nav class="flex items-center gap-2">
-    <a href="{% url 'shop' %}" class="px-4 py-2 rounded-full text-sm font-bold transition-all {% if active_section == 'shop' %}bg-secondary text-white{% else %}text-on-surface-variant hover:bg-surface-container-high{% endif %}">Shop</a>
-    <a href="{% url 'tracking' %}" class="px-4 py-2 rounded-full text-sm font-bold transition-all {% if active_section == 'tracking' %}bg-secondary text-white{% else %}text-on-surface-variant hover:bg-surface-container-high{% endif %}">Orders</a>
-    <a href="{% url 'about' %}" class="hidden md:block px-4 py-2 rounded-full text-sm font-bold text-on-surface-variant hover:bg-surface-container-high transition-all">About</a>
-  </nav>
-
-  <!-- Actions -->
-  <div class="flex items-center gap-2 md:gap-4">
-    <!-- Cart -->
-    <a href="{% url 'checkout' %}" class="relative w-11 h-11 flex items-center justify-center bg-surface-container-high rounded-2xl hover:bg-surface-container-highest transition-colors group">
-      <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-on-surface group-hover:scale-110 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
-      <span class="cart-badge absolute -top-1 -right-1 w-5 h-5 bg-tertiary text-white text-[10px] font-bold rounded-full items-center justify-center ring-2 ring-surface {% if cart_count > 0 %}flex{% else %}hidden{% endif %}">{{ cart_count }}</span>
-    </a>
-
-    <div class="h-8 w-px bg-outline-variant/30 hidden md:block"></div>
-
-    {% if user.is_authenticated %}
-      <div class="flex items-center gap-2">
-        <a href="{% url 'profile_detail' user.username %}" class="hidden md:flex items-center gap-2 px-3 py-2 bg-surface-container-high rounded-full hover:bg-surface-container-highest transition-all group">
-          <div class="w-7 h-7 rounded-full bg-secondary text-white flex items-center justify-center text-xs font-bold">{{ user.first_name|first|upper }}{{ user.last_name|first|upper }}</div>
-          <span class="text-xs font-bold text-on-surface-variant">{{ user.first_name }}</span>
-        </a>
-        {% if user.is_staff %}
-        <a href="{% url 'admin_dashboard' %}" class="hidden md:flex items-center gap-1 px-3 py-2 bg-primary text-white rounded-full text-xs font-bold hover:opacity-90 transition-all">
-          Admin
-        </a>
-        {% endif %}
-        <a href="{% url 'account_logout' %}" class="hidden md:flex items-center gap-1 px-3 py-2 bg-surface-container-high text-on-surface-variant rounded-full text-xs font-bold hover:bg-surface-container-highest transition-all">
-          Logout
-        </a>
-      </div>
-    {% else %}
-      <a href="{% url 'account_login' %}" class="hidden md:flex items-center gap-2 px-4 py-2 bg-surface-container-highest/50 rounded-full hover:bg-surface-container-highest transition-all">
-        <span class="text-xs font-bold text-on-surface-variant uppercase tracking-tight">Sign In</span>
+<header class="bg-white/80 backdrop-blur-md border-b border-[#d8c2b5]/30 px-4 md:px-8 lg:px-10 py-4 sticky top-0 z-50 shadow-sm">
+  <div class="max-w-7xl mx-auto flex flex-col gap-4">
+    <div class="flex items-center justify-between gap-3">
+      <a href="{% url 'shop' %}" class="min-w-0 flex items-center gap-3">
+        <div class="w-10 h-10 bg-secondary rounded-xl flex items-center justify-center shadow-lg shadow-secondary/20 flex-shrink-0">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg>
+        </div>
+        <div class="min-w-0">
+          <h1 class="font-sans font-bold text-base md:text-lg leading-tight tracking-tight text-on-surface truncate">Savanna Scoops</h1>
+          <div class="hidden sm:flex items-center gap-1 text-[10px] text-secondary font-bold uppercase tracking-widest">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+            <span class="truncate">Westlands, Nairobi</span>
+          </div>
+        </div>
       </a>
-    {% endif %}
+
+      <div class="flex items-center gap-2">
+        <a href="{% url 'checkout' %}" class="relative w-11 h-11 flex items-center justify-center bg-surface-container-high rounded-2xl hover:bg-surface-container-highest transition-colors group flex-shrink-0">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-on-surface group-hover:scale-110 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
+          <span class="cart-badge absolute -top-1 -right-1 w-5 h-5 bg-tertiary text-white text-[10px] font-bold rounded-full items-center justify-center ring-2 ring-surface {% if cart_count > 0 %}flex{% else %}hidden{% endif %}">{{ cart_count }}</span>
+        </a>
+
+        {% if user.is_authenticated %}
+          <a href="{% url 'profile_detail' user.username %}" class="hidden sm:flex items-center gap-2 px-3 py-2 bg-surface-container-high rounded-full hover:bg-surface-container-highest transition-all group">
+            <div class="w-7 h-7 rounded-full bg-secondary text-white flex items-center justify-center text-xs font-bold">{{ user.first_name|first|upper }}{{ user.last_name|first|upper }}</div>
+            <span class="max-w-24 truncate text-xs font-bold text-on-surface-variant">{{ user.first_name|default:user.username }}</span>
+          </a>
+        {% else %}
+          <a href="{% url 'account_login' %}" class="hidden sm:flex items-center gap-2 px-4 py-2 bg-surface-container-highest/50 rounded-full hover:bg-surface-container-highest transition-all">
+            <span class="text-xs font-bold text-on-surface-variant uppercase tracking-tight">Sign In</span>
+          </a>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+      <nav class="flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar">
+        <a href="{% url 'shop' %}" class="px-4 py-2 rounded-full text-sm font-bold whitespace-nowrap transition-all {% if active_section == 'shop' %}bg-secondary text-white{% else %}text-on-surface-variant hover:bg-surface-container-high{% endif %}">Shop</a>
+        <a href="{% url 'tracking' %}" class="px-4 py-2 rounded-full text-sm font-bold whitespace-nowrap transition-all {% if active_section == 'tracking' %}bg-secondary text-white{% else %}text-on-surface-variant hover:bg-surface-container-high{% endif %}">Orders</a>
+        <a href="{% url 'about' %}" class="px-4 py-2 rounded-full text-sm font-bold whitespace-nowrap text-on-surface-variant hover:bg-surface-container-high transition-all">About</a>
+      </nav>
+
+      <div class="flex flex-wrap items-center gap-2">
+        {% if user.is_authenticated %}
+          <a href="{% url 'profile_detail' user.username %}" class="sm:hidden inline-flex items-center gap-2 px-3 py-2 bg-surface-container-high rounded-full text-xs font-bold text-on-surface-variant hover:bg-surface-container-highest transition-all">
+            Profile
+          </a>
+          {% if user.is_staff %}
+            <a href="{% url 'admin_dashboard' %}" class="inline-flex items-center gap-1 px-3 py-2 bg-primary text-white rounded-full text-xs font-bold hover:opacity-90 transition-all">
+              Admin
+            </a>
+          {% endif %}
+          <a href="{% url 'account_logout' %}" class="inline-flex items-center gap-1 px-3 py-2 bg-surface-container-high text-on-surface-variant rounded-full text-xs font-bold hover:bg-surface-container-highest transition-all">
+            Logout
+          </a>
+        {% else %}
+          <a href="{% url 'account_login' %}" class="sm:hidden inline-flex items-center gap-2 px-4 py-2 bg-surface-container-highest/50 rounded-full hover:bg-surface-container-highest transition-all">
+            <span class="text-xs font-bold text-on-surface-variant uppercase tracking-tight">Sign In</span>
+          </a>
+          <a href="{% url 'account_signup' %}" class="inline-flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-full hover:opacity-90 transition-all">
+            <span class="text-xs font-bold uppercase tracking-tight">Create Account</span>
+          </a>
+        {% endif %}
+      </div>
+    </div>
   </div>
 </header>
 
