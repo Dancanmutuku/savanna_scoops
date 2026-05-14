@@ -75,6 +75,7 @@ WSGI_APPLICATION = 'savanna_scoops.wsgi.application'
 DATABASE_URL = config('DATABASE_URL', default='')
 if DATABASE_URL:
     parsed = urlparse(DATABASE_URL)
+    database_sslmode = config('DATABASE_SSLMODE', default='require').strip()
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql',
@@ -84,7 +85,7 @@ if DATABASE_URL:
             'HOST': parsed.hostname or '',
             'PORT': str(parsed.port or ''),
             'CONN_MAX_AGE': 600,
-            'OPTIONS': {'sslmode': 'require'} if not DEBUG else {},
+            'OPTIONS': {'sslmode': database_sslmode} if database_sslmode else {},
         }
     }
 else:

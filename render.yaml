@@ -15,9 +15,9 @@ services:
       - key: CSRF_TRUSTED_ORIGINS
         value: https://savanna-scoops.onrender.com
       - key: DATABASE_URL
-        fromDatabase:
-          name: savanna-scoops-db
-          property: connectionString
+        sync: false
+      - key: DATABASE_SSLMODE
+        value: require
       - key: GOOGLE_CLIENT_ID
         sync: false
       - key: GOOGLE_CLIENT_SECRET
@@ -46,7 +46,3 @@ services:
         sync: false
       - key: DEFAULT_FROM_EMAIL
         sync: false
-
-databases:
-  - name: savanna-scoops-db
-    plan: free
