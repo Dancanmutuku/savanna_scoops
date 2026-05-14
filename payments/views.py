@@ -41,6 +41,7 @@ def _mark_order_paid(order, method, transaction_code, note=None):
             note=note or f'{method} payment confirmed. Transaction: {transaction_code}',
         )
         if not was_paid:
+            logger.info("Order %s marked paid via %s. Receipt: %s", order.order_number, method, transaction_code)
             transaction.on_commit(lambda: queue_order_confirmation_email(order.id))
 
 

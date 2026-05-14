@@ -42,24 +42,69 @@
           <a href="{% url 'account_login' %}" class="h-11 inline-flex items-center px-3 sm:px-4 bg-surface-container-high text-on-surface-variant rounded-xl text-xs font-black hover:bg-surface-container-highest transition-all">Sign In</a>
           <a href="{% url 'account_signup' %}" class="hidden sm:inline-flex h-11 items-center px-4 bg-primary text-white rounded-xl text-xs font-black hover:opacity-90 transition-all">Create Account</a>
         {% endif %}
+
+        <button type="button" class="lg:hidden h-11 w-11 inline-flex items-center justify-center rounded-xl bg-on-surface text-inverse-on-surface" aria-label="Open menu" aria-controls="customerMobileMenu" aria-expanded="false" data-menu-open="customerMobileMenu">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.4" d="M4 7h16M4 12h16M4 17h16"/></svg>
+        </button>
       </div>
     </div>
-
-    <nav class="lg:hidden flex items-center gap-2 overflow-x-auto no-scrollbar py-2 border-t border-outline-variant/20">
-      <a href="{% url 'shop' %}" class="px-4 py-2 rounded-xl text-sm font-black whitespace-nowrap transition-all {% if active_section == 'shop' %}bg-secondary text-white{% else %}bg-surface-container-low text-on-surface-variant{% endif %}">Shop</a>
-      {% if user.is_authenticated %}
-        <a href="{% url 'my_orders' %}" class="px-4 py-2 rounded-xl text-sm font-black whitespace-nowrap transition-all {% if active_section == 'orders' %}bg-secondary text-white{% else %}bg-surface-container-low text-on-surface-variant{% endif %}">My Orders</a>
-      {% else %}
-        <a href="{% url 'account_signup' %}" class="px-4 py-2 rounded-xl text-sm font-black whitespace-nowrap bg-primary text-white">Create Account</a>
-        <a href="{% url 'tracking' %}" class="px-4 py-2 rounded-xl text-sm font-black whitespace-nowrap transition-all {% if active_section == 'tracking' %}bg-secondary text-white{% else %}bg-surface-container-low text-on-surface-variant{% endif %}">Track</a>
-      {% endif %}
-      <a href="{% url 'about' %}" class="px-4 py-2 rounded-xl text-sm font-black whitespace-nowrap bg-surface-container-low text-on-surface-variant">About</a>
-      {% if user.is_authenticated %}
-        <a href="{% url 'account_logout' %}" class="md:hidden px-4 py-2 rounded-xl text-sm font-black whitespace-nowrap bg-surface-container-low text-on-surface-variant">Logout</a>
-      {% endif %}
-    </nav>
   </div>
 </header>
+
+<div id="customerMobileMenu" class="fixed inset-0 z-[70] hidden lg:hidden" data-menu>
+  <button type="button" class="absolute inset-0 bg-on-surface/45" aria-label="Close menu" data-menu-close="customerMobileMenu"></button>
+  <aside class="absolute right-0 top-0 h-full w-[min(22rem,88vw)] bg-surface shadow-2xl border-l border-outline-variant/30 p-5 flex flex-col">
+    <div class="flex items-center justify-between gap-4 pb-5 border-b border-outline-variant/20">
+      <div>
+        <p class="text-[10px] uppercase tracking-[0.18em] text-secondary font-black">Menu</p>
+        <h2 class="font-sans font-black text-xl">Savanna Scoops</h2>
+      </div>
+      <button type="button" class="w-10 h-10 inline-flex items-center justify-center rounded-xl bg-surface-container-high" aria-label="Close menu" data-menu-close="customerMobileMenu">
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.4" d="M6 18L18 6M6 6l12 12"/></svg>
+      </button>
+    </div>
+
+    <nav class="py-5 space-y-2">
+      <a href="{% url 'shop' %}" class="mobile-menu-link {% if active_section == 'shop' %}active{% endif %}">Shop</a>
+      {% if user.is_authenticated %}
+        <a href="{% url 'my_orders' %}" class="mobile-menu-link {% if active_section == 'orders' %}active{% endif %}">My Orders</a>
+      {% else %}
+        <a href="{% url 'account_signup' %}" class="mobile-menu-link active">Create Account</a>
+        <a href="{% url 'tracking' %}" class="mobile-menu-link {% if active_section == 'tracking' %}active{% endif %}">Track Order</a>
+      {% endif %}
+      <a href="{% url 'about' %}" class="mobile-menu-link">About</a>
+      <a href="{% url 'checkout' %}" class="mobile-menu-link">Cart{% if cart_count > 0 %} <span class="ml-auto text-xs bg-tertiary text-white rounded-full px-2 py-0.5">{{ cart_count }}</span>{% endif %}</a>
+      {% if user.is_staff %}
+        <a href="{% url 'admin_dashboard' %}" class="mobile-menu-link">Admin Dashboard</a>
+      {% endif %}
+    </nav>
+
+    <div class="mt-auto pt-5 border-t border-outline-variant/20">
+      {% if user.is_authenticated %}
+        <a href="{% url 'profile_detail' user.username %}" class="mobile-menu-link mb-2">Profile</a>
+        <a href="{% url 'account_logout' %}" class="mobile-menu-link danger">Logout</a>
+      {% else %}
+        <a href="{% url 'account_login' %}" class="mobile-menu-link">Sign In</a>
+      {% endif %}
+    </div>
+  </aside>
+</div>
+
+<style>
+  .mobile-menu-link {
+    min-height: 48px;
+    display: flex;
+    align-items: center;
+    padding: 12px 14px;
+    border-radius: 14px;
+    background: #f7f3ea;
+    color: #534439;
+    font-size: 14px;
+    font-weight: 900;
+  }
+  .mobile-menu-link.active { background: #8e4e14; color: #fff; }
+  .mobile-menu-link.danger { color: #bb152c; }
+</style>
 
 {% if messages %}
   {% for message in messages %}

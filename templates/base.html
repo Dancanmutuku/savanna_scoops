@@ -113,6 +113,7 @@
   <div id="toast-container"></div>
 
   {% block body %}{% endblock %}
+  {% block footer %}{% include "partials/site_footer.html" %}{% endblock %}
 
   <!-- Toast JS -->
   <script>
@@ -165,6 +166,35 @@
       document.querySelectorAll('.django-message').forEach(el => {
         const type = el.dataset.type === 'error' ? 'error' : 'success';
         showToast(el.textContent.trim(), type);
+      });
+
+      document.querySelectorAll('[data-menu-open]').forEach(button => {
+        button.addEventListener('click', () => {
+          const menu = document.getElementById(button.dataset.menuOpen);
+          if (!menu) return;
+          menu.classList.remove('hidden');
+          button.setAttribute('aria-expanded', 'true');
+          document.body.classList.add('overflow-hidden');
+        });
+      });
+
+      document.querySelectorAll('[data-menu-close]').forEach(button => {
+        button.addEventListener('click', () => {
+          const menu = document.getElementById(button.dataset.menuClose);
+          if (!menu) return;
+          menu.classList.add('hidden');
+          document.querySelectorAll(`[data-menu-open="${button.dataset.menuClose}"]`).forEach(openButton => {
+            openButton.setAttribute('aria-expanded', 'false');
+          });
+          document.body.classList.remove('overflow-hidden');
+        });
+      });
+
+      document.addEventListener('keydown', event => {
+        if (event.key !== 'Escape') return;
+        document.querySelectorAll('[data-menu]').forEach(menu => menu.classList.add('hidden'));
+        document.querySelectorAll('[data-menu-open]').forEach(button => button.setAttribute('aria-expanded', 'false'));
+        document.body.classList.remove('overflow-hidden');
       });
     });
   </script>

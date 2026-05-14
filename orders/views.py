@@ -1,4 +1,5 @@
 import json
+import logging
 
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
@@ -9,6 +10,8 @@ from django.views.decorators.http import require_POST
 from store.models import Flavor, SiteSettings
 
 from .models import Order, OrderItem, OrderStatusHistory
+
+logger = logging.getLogger(__name__)
 
 
 @require_POST
@@ -61,6 +64,7 @@ def create_order(request):
         status='pending',
         note='Order created, awaiting payment.',
     )
+    logger.info("Order %s created by user %s for KSh %s.", order.order_number, request.user.id, order.total)
 
     request.session['pending_order_id'] = order.id
     request.session.modified = True

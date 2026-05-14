@@ -1,0 +1,76 @@
+{% extends "admin_panel/base_admin.html" %}
+{% block admin_breadcrumb %}System / Logs{% endblock %}
+{% block admin_title %}System Logs{% endblock %}
+
+{% block admin_content %}
+<div class="space-y-5">
+  <div class="grid gap-4 md:grid-cols-[1fr_auto] md:items-end">
+    <div>
+      <p class="text-sm text-on-surface-variant">Persistent application logs from payments, orders, inventory, and request errors.</p>
+      <p class="text-xs text-on-surface-variant mt-1">Render will still show console logs, while this page keeps important entries in the database.</p>
+    </div>
+    <form method="get" class="flex flex-col gap-2 sm:flex-row sm:items-center">
+      <select name="level" class="bg-surface-container-high border-none rounded-xl px-3 py-2.5 text-sm font-bold outline-none">
+        <option value="">All levels</option>
+        {% for value, label in levels %}
+          <option value="{{ value }}" {% if level == value %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+      <select name="logger" class="bg-surface-container-high border-none rounded-xl px-3 py-2.5 text-sm font-bold outline-none">
+        <option value="">All loggers</option>
+        {% for name in logger_names %}
+          <option value="{{ name }}" {% if logger_name == name %}selected{% endif %}>{{ name }}</option>
+        {% endfor %}
+      </select>
+      <button class="px-4 py-2.5 bg-primary text-white rounded-xl text-sm font-black">Filter</button>
+    </form>
+  </div>
+
+  <div class="sculpted-card rounded-[2rem] overflow-hidden border border-outline-variant/20">
+    <div class="overflow-x-auto">
+      <table class="w-full text-left">
+        <thead>
+          <tr class="bg-surface-container-low/50">
+            <th class="ss-table-header">Level</th>
+            <th class="ss-table-header">Logger</th>
+            <th class="ss-table-header">Message</th>
+            <th class="ss-table-header">Location</th>
+            <th class="ss-table-header text-right">Time</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-outline-variant/10">
+          {% for log in logs %}
+          <tr class="hover:bg-surface-container-high/30 transition-colors align-top">
+            <td class="px-6 py-4">
+              <span class="px-2 py-1 rounded-full text-[10px] font-black uppercase {% if log.level == 'critical' or log.level == 'error' %}bg-tertiary/10 text-tertiary{% elif log.level == 'warning' %}bg-yellow-100 text-yellow-700{% else %}bg-green-100 text-green-700{% endif %}">
+                {{ log.level }}
+              </span>
+            </td>
+            <td class="px-6 py-4">
+              <p class="font-mono text-xs font-bold text-on-surface">{{ log.logger_name }}</p>
+              {% if log.path %}<p class="font-mono text-[10px] text-on-surface-variant mt-1">{{ log.path }}</p>{% endif %}
+            </td>
+            <td class="px-6 py-4 max-w-xl">
+              <p class="text-sm font-semibold text-on-surface break-words">{{ log.message }}</p>
+              {% if log.traceback %}
+                <details class="mt-2">
+                  <summary class="cursor-pointer text-xs font-black text-secondary">View traceback</summary>
+                  <pre class="mt-2 whitespace-pre-wrap bg-on-surface text-inverse-on-surface rounded-xl p-3 text-[11px] overflow-x-auto">{{ log.traceback }}</pre>
+                </details>
+              {% endif %}
+            </td>
+            <td class="px-6 py-4">
+              <p class="font-mono text-xs text-on-surface-variant">{{ log.module|default:"-" }}</p>
+              <p class="font-mono text-[10px] text-on-surface-variant">{{ log.function|default:"-" }}</p>
+            </td>
+            <td class="px-6 py-4 text-right text-[10px] text-on-surface-variant whitespace-nowrap">{{ log.created_at|timesince }} ago</td>
+          </tr>
+          {% empty %}
+          <tr><td colspan="5" class="px-6 py-16 text-center text-on-surface-variant">No system logs yet.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

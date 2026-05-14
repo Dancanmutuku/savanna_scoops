@@ -10,6 +10,7 @@ urlpatterns = [
     path('orders/<int:order_id>/invoice/', views.invoice_view, name='admin_invoice'),
     path('analytics/', views.analytics_view, name='admin_analytics'),
     path('audit/', views.audit_view, name='admin_audit'),
+    path('system-logs/', views.system_logs_view, name='admin_system_logs'),
     path('flavors/', views.flavors_admin, name='admin_flavors'),
     path('models/', views.admin_models_view, name='admin_models'),
     path('models/<str:app_label>/<str:model_name>/', views.admin_model_list, name='admin_model_list'),

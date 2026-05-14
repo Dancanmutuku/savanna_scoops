@@ -10,7 +10,7 @@ from datetime import timedelta
 from functools import wraps
 import json
 
-from .models import InventoryItem, StockMovement, AuditLog
+from .models import InventoryItem, StockMovement, AuditLog, SystemLog, UserActivity
 from orders.models import Order, OrderItem
 from store.models import Flavor, SiteSettings
 from payments.models import MpesaTransaction
@@ -154,6 +154,12 @@ def update_order_status(request, order_id):
 
 @staff_required
 def analytics_view(request):
+    live_cutoff = timezone.now() - timedelta(minutes=5)
+    live_sessions = UserActivity.objects.select_related('user').filter(last_seen__gte=live_cutoff)
+    live_users_count = live_sessions.values('user_id').distinct().count()
+    live_staff_count = live_sessions.filter(user__is_staff=True).values('user_id').distinct().count()
+    live_customer_count = max(live_users_count - live_staff_count, 0)
+
     flavor_sales = OrderItem.objects.values('flavor_name').annotate(
         total_qty=Sum('quantity'),
         total_revenue=Sum('subtotal'),
@@ -178,6 +184,11 @@ def analytics_view(request):
         'total_revenue': total_revenue,
         'total_orders': total_orders,
         'paid_orders': paid_orders,
+        'live_users_count': live_users_count,
+        'live_staff_count': live_staff_count,
+        'live_customer_count': live_customer_count,
+        'live_users': live_sessions.order_by('-last_seen')[:12],
+        'live_window_minutes': 5,
         'admin_section': 'analytics',
     })
 
@@ -186,6 +197,26 @@ def analytics_view(request):
 def audit_view(request):
     logs = AuditLog.objects.select_related('actor').all()[:100]
     return render(request, 'admin_panel/audit.html', {'logs': logs, 'admin_section': 'audit'})
+
+
+@staff_required
+def system_logs_view(request):
+    level = request.GET.get('level', '')
+    logger_name = request.GET.get('logger', '')
+    logs = SystemLog.objects.all()
+    if level:
+        logs = logs.filter(level=level)
+    if logger_name:
+        logs = logs.filter(logger_name=logger_name)
+
+    return render(request, 'admin_panel/system_logs.html', {
+        'logs': logs[:200],
+        'level': level,
+        'logger_name': logger_name,
+        'levels': SystemLog.LEVEL_CHOICES,
+        'logger_names': SystemLog.objects.values_list('logger_name', flat=True).distinct().order_by('logger_name'),
+        'admin_section': 'system_logs',
+    })
 
 
 @staff_required

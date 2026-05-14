@@ -93,3 +93,44 @@ class AuditLog(models.Model):
 
     def __str__(self):
         return f"{self.actor_name}: {self.action}"
+
+
+class SystemLog(models.Model):
+    LEVEL_CHOICES = [
+        ('debug', 'Debug'),
+        ('info', 'Info'),
+        ('warning', 'Warning'),
+        ('error', 'Error'),
+        ('critical', 'Critical'),
+    ]
+
+    level = models.CharField(max_length=20, choices=LEVEL_CHOICES, default='info')
+    logger_name = models.CharField(max_length=150, db_index=True)
+    message = models.TextField()
+    module = models.CharField(max_length=100, blank=True)
+    function = models.CharField(max_length=100, blank=True)
+    path = models.CharField(max_length=300, blank=True)
+    traceback = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.level.upper()} {self.logger_name}: {self.message[:80]}"
+
+
+class UserActivity(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='activity_sessions')
+    session_key = models.CharField(max_length=80, unique=True)
+    ip_address = models.GenericIPAddressField(null=True, blank=True)
+    user_agent = models.CharField(max_length=300, blank=True)
+    path = models.CharField(max_length=300, blank=True)
+    last_seen = models.DateTimeField(db_index=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-last_seen']
+
+    def __str__(self):
+        return f"{self.user} active at {self.last_seen}"
