@@ -47,6 +47,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'savanna_scoops.middleware.RateLimitMiddleware',
     'inventory.middleware.UserActivityMiddleware',
+    'savanna_scoops.middleware.AuthenticatedResponsePrivacyMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'allauth.account.middleware.AccountMiddleware',
@@ -201,6 +202,8 @@ CORS_ALLOWED_ORIGINS = [
 ]
 
 # Session
+SESSION_ENGINE = 'django.contrib.sessions.backends.db'
+SESSION_COOKIE_NAME = 'savanna_scoops_sessionid'
 SESSION_COOKIE_AGE = 86400  # 24 hours
 SESSION_SAVE_EVERY_REQUEST = True
 

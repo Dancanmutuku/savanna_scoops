@@ -2,6 +2,7 @@ import time
 
 from django.core.cache import cache
 from django.http import JsonResponse
+from django.utils.cache import patch_cache_control, patch_vary_headers
 
 
 class SecurityHeadersMiddleware:
@@ -80,3 +81,16 @@ class RateLimitMiddleware:
         forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR', '')
         ip_address = forwarded_for.split(',')[0].strip() or request.META.get('REMOTE_ADDR', 'unknown')
         return f"ip:{ip_address}"
+
+
+class AuthenticatedResponsePrivacyMiddleware:
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        response = self.get_response(request)
+        user = getattr(request, 'user', None)
+        if user and user.is_authenticated:
+            patch_cache_control(response, private=True, no_cache=True, no_store=True, must_revalidate=True)
+            patch_vary_headers(response, ['Cookie'])
+        return response
