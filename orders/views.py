@@ -2,9 +2,11 @@ import json
 import logging
 
 from django.contrib.auth.decorators import login_required
+from django.core.cache import cache
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, render
 from django.utils import timezone
+from django.db import transaction
 from django.views.decorators.http import require_POST
 
 from store.models import Flavor, SiteSettings
@@ -36,34 +38,41 @@ def create_order(request):
     delivery_fee = float(site.delivery_fee) if subtotal > 0 else 0
     total = subtotal + delivery_fee
 
-    order = Order.objects.create(
-        user=request.user if request.user.is_authenticated else None,
-        customer_name=data.get('name', ''),
-        customer_email=data.get('email', ''),
-        customer_phone=data.get('phone', ''),
-        delivery_address=data.get('address', 'Pickup'),
-        delivery_instructions=data.get('instructions', ''),
-        subtotal=subtotal,
-        delivery_fee=delivery_fee,
-        total=total,
-        payment_method=data.get('payment_method', 'M-Pesa'),
-    )
+    flavor_ids = [item['id'] for item in cart.values()]
+    flavors = Flavor.objects.in_bulk(flavor_ids)
 
-    for item in cart.values():
-        flavor = Flavor.objects.filter(id=item['id']).first()
-        OrderItem.objects.create(
-            order=order,
-            flavor=flavor,
-            flavor_name=item['name'],
-            price=item['price'],
-            quantity=item['qty'],
+    with transaction.atomic():
+        order = Order.objects.create(
+            user=request.user,
+            customer_name=data.get('name', ''),
+            customer_email=data.get('email', ''),
+            customer_phone=data.get('phone', ''),
+            delivery_address=data.get('address', 'Pickup'),
+            delivery_instructions=data.get('instructions', ''),
+            subtotal=subtotal,
+            delivery_fee=delivery_fee,
+            total=total,
+            payment_method=data.get('payment_method', 'M-Pesa'),
         )
 
-    OrderStatusHistory.objects.create(
-        order=order,
-        status='pending',
-        note='Order created, awaiting payment.',
-    )
+        OrderItem.objects.bulk_create([
+            OrderItem(
+                order=order,
+                flavor=flavors.get(item['id']),
+                flavor_name=item['name'],
+                price=item['price'],
+                quantity=item['qty'],
+                subtotal=item['price'] * item['qty'],
+            )
+            for item in cart.values()
+        ])
+
+        OrderStatusHistory.objects.create(
+            order=order,
+            status='pending',
+            note='Order created, awaiting payment.',
+        )
+    cache.delete('analytics:summary')
     logger.info("Order %s created by user %s for KSh %s.", order.order_number, request.user.id, order.total)
 
     request.session['pending_order_id'] = order.id
@@ -80,7 +89,7 @@ def create_order(request):
 @login_required
 def order_confirmation(request, order_number):
     """Order confirmation page."""
-    orders = Order.objects.all() if request.user.is_staff else Order.objects.filter(user=request.user)
+    orders = Order.objects.prefetch_related('items') if request.user.is_staff else Order.objects.filter(user=request.user).prefetch_related('items')
     order = get_object_or_404(orders, order_number=order_number)
 
     request.session['cart'] = {}

@@ -1,6 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import user_passes_test
 from django.contrib import admin, messages
+from django.core.cache import cache
 from django.forms import modelform_factory
 from django.http import JsonResponse
 from django.db.models import Sum, F
@@ -160,30 +161,37 @@ def analytics_view(request):
     live_staff_count = live_sessions.filter(user__is_staff=True).values('user_id').distinct().count()
     live_customer_count = max(live_users_count - live_staff_count, 0)
 
-    flavor_sales = OrderItem.objects.values('flavor_name').annotate(
-        total_qty=Sum('quantity'),
-        total_revenue=Sum('subtotal'),
-    ).order_by('-total_revenue')[:10]
+    summary = cache.get('analytics:summary')
+    if summary is None:
+        flavor_sales = list(OrderItem.objects.values('flavor_name').annotate(
+            total_qty=Sum('quantity'),
+            total_revenue=Sum('subtotal'),
+        ).order_by('-total_revenue')[:10])
 
-    today = timezone.now().date()
-    daily_revenue = []
-    for i in range(29, -1, -1):
-        day = today - timedelta(days=i)
-        rev = Order.objects.filter(
-            created_at__date=day, payment_status='paid'
-        ).aggregate(total=Sum('total'))['total'] or 0
-        daily_revenue.append({'date': day.strftime('%b %d'), 'revenue': float(rev)})
+        today = timezone.now().date()
+        daily_revenue = []
+        for i in range(29, -1, -1):
+            day = today - timedelta(days=i)
+            rev = Order.objects.filter(
+                created_at__date=day, payment_status='paid'
+            ).aggregate(total=Sum('total'))['total'] or 0
+            daily_revenue.append({'date': day.strftime('%b %d'), 'revenue': float(rev)})
 
-    total_revenue = Order.objects.filter(payment_status='paid').aggregate(total=Sum('total'))['total'] or 0
-    total_orders = Order.objects.count()
-    paid_orders = Order.objects.filter(payment_status='paid').count()
+        summary = {
+            'flavor_sales': flavor_sales,
+            'daily_revenue': daily_revenue,
+            'total_revenue': Order.objects.filter(payment_status='paid').aggregate(total=Sum('total'))['total'] or 0,
+            'total_orders': Order.objects.count(),
+            'paid_orders': Order.objects.filter(payment_status='paid').count(),
+        }
+        cache.set('analytics:summary', summary, 60)
 
     return render(request, 'admin_panel/analytics.html', {
-        'flavor_sales': list(flavor_sales),
-        'daily_revenue': json.dumps(daily_revenue),
-        'total_revenue': total_revenue,
-        'total_orders': total_orders,
-        'paid_orders': paid_orders,
+        'flavor_sales': summary['flavor_sales'],
+        'daily_revenue': json.dumps(summary['daily_revenue']),
+        'total_revenue': summary['total_revenue'],
+        'total_orders': summary['total_orders'],
+        'paid_orders': summary['paid_orders'],
         'live_users_count': live_users_count,
         'live_staff_count': live_staff_count,
         'live_customer_count': live_customer_count,

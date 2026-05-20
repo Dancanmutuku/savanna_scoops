@@ -1,9 +1,12 @@
 from django.shortcuts import get_object_or_404
 from django.http import JsonResponse
+from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 from django.utils import timezone
 from django.db import transaction
+from django.core.cache import cache
+from decimal import Decimal, InvalidOperation
 import json
 import logging
 
@@ -27,6 +30,24 @@ def _result_code_as_int(result_code):
         return None
 
 
+def _user_can_access_order(user, order):
+    return bool(order and (user.is_staff or order.user_id == user.id))
+
+
+def _callback_metadata_value(callback, name):
+    for item in callback.get('CallbackMetadata', {}).get('Item', []):
+        if item.get('Name') == name:
+            return item.get('Value')
+    return None
+
+
+def _decimal_or_none(value):
+    try:
+        return Decimal(str(value))
+    except (InvalidOperation, TypeError, ValueError):
+        return None
+
+
 def _mark_order_paid(order, method, transaction_code, note=None):
     with transaction.atomic():
         was_paid = order.payment_status == 'paid'
@@ -41,6 +62,7 @@ def _mark_order_paid(order, method, transaction_code, note=None):
             note=note or f'{method} payment confirmed. Transaction: {transaction_code}',
         )
         if not was_paid:
+            cache.delete('analytics:summary')
             logger.info("Order %s marked paid via %s. Receipt: %s", order.order_number, method, transaction_code)
             transaction.on_commit(lambda: queue_order_confirmation_email(order.id))
 
@@ -53,6 +75,7 @@ def _mark_order_cancelled(order, note):
 
 
 @require_POST
+@login_required
 def initiate_mpesa(request):
     """Start STK Push for an order."""
     data = json.loads(request.body)
@@ -62,7 +85,10 @@ def initiate_mpesa(request):
     if not phone or not order_id:
         return JsonResponse({'success': False, 'error': 'Phone and order required'}, status=400)
     
-    order = get_object_or_404(Order, id=order_id)
+    orders = Order.objects.all() if request.user.is_staff else Order.objects.filter(user=request.user)
+    order = get_object_or_404(orders, id=order_id)
+    if order.payment_status == 'paid':
+        return JsonResponse({'success': False, 'error': 'This order is already paid.'}, status=400)
     
     result = initiate_stk_push(
         phone_number=phone,
@@ -90,6 +116,7 @@ def initiate_mpesa(request):
 
 
 @require_POST
+@login_required
 def check_payment_status(request):
     """Poll payment status."""
     data = json.loads(request.body)
@@ -101,6 +128,9 @@ def check_payment_status(request):
     try:
         txn = MpesaTransaction.objects.get(checkout_request_id=checkout_request_id)
     except MpesaTransaction.DoesNotExist:
+        return JsonResponse({'success': False, 'error': 'Transaction not found'}, status=404)
+
+    if txn.order and not _user_can_access_order(request.user, txn.order):
         return JsonResponse({'success': False, 'error': 'Transaction not found'}, status=404)
     
     if txn.status == 'success':
@@ -179,13 +209,26 @@ def mpesa_callback(request):
         result_code_int = _result_code_as_int(result_code)
 
         if result_code_int == 0:
-            # Payment successful
-            callback_metadata = callback.get('CallbackMetadata', {}).get('Item', [])
-            receipt = ''
-            for item in callback_metadata:
-                if item.get('Name') == 'MpesaReceiptNumber':
-                    receipt = item.get('Value', '')
+            if txn.status == 'success' and txn.order and txn.order.payment_status == 'paid':
+                logger.info("Ignoring duplicate M-Pesa success callback for %s.", checkout_request_id)
+                return JsonResponse({'ResultCode': 0, 'ResultDesc': 'Accepted'})
+
+            receipt = _callback_metadata_value(callback, 'MpesaReceiptNumber')
             receipt = receipt or _fallback_code('MPESA', checkout_request_id)
+
+            paid_amount = _decimal_or_none(_callback_metadata_value(callback, 'Amount'))
+            if txn.order and paid_amount is not None and paid_amount != txn.order.total:
+                txn.status = 'failed'
+                txn.result_code = result_code_int
+                txn.result_desc = f'Amount mismatch. Paid {paid_amount}, expected {txn.order.total}.'
+                txn.save()
+                logger.warning(
+                    "Rejected M-Pesa callback for %s due to amount mismatch. Paid: %s Expected: %s",
+                    checkout_request_id,
+                    paid_amount,
+                    txn.order.total,
+                )
+                return JsonResponse({'ResultCode': 0, 'ResultDesc': 'Accepted'})
             
             with transaction.atomic():
                 txn.status = 'success'
@@ -215,10 +258,14 @@ def mpesa_callback(request):
 
 
 @require_POST
+@login_required
 def complete_manual_payment(request):
     """Mark an order paid for non-M-Pesa checkout methods."""
     data = json.loads(request.body)
-    order = get_object_or_404(Order, id=data.get('order_id'))
+    orders = Order.objects.all() if request.user.is_staff else Order.objects.filter(user=request.user)
+    order = get_object_or_404(orders, id=data.get('order_id'))
+    if order.payment_status == 'paid':
+        return JsonResponse({'success': False, 'error': 'This order is already paid.'}, status=400)
     method = data.get('payment_method', 'Card')
     transaction_code = data.get('transaction_code') or _fallback_code(method.upper().replace(' ', ''), order.order_number)
     _mark_order_paid(order, method, transaction_code)

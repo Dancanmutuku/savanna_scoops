@@ -1,6 +1,7 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.http import JsonResponse
 from django.contrib import messages
+from django.core.cache import cache
 from django.views.decorators.http import require_POST
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q
@@ -11,8 +12,12 @@ from .models import Flavor, Category, Review, SiteSettings
 
 def shop(request):
     """Main shop / customer landing page."""
-    categories = Category.objects.all()
-    flavors = Flavor.objects.filter(is_active=True)
+    categories = cache.get('store:categories')
+    if categories is None:
+        categories = list(Category.objects.all())
+        cache.set('store:categories', categories, 300)
+
+    flavors = Flavor.objects.select_related('category').filter(is_active=True)
     
     # Filter by category
     category_slug = request.GET.get('category', '')
@@ -48,7 +53,7 @@ def shop(request):
 
 
 def flavor_detail(request, slug):
-    flavor = get_object_or_404(Flavor, slug=slug, is_active=True)
+    flavor = get_object_or_404(Flavor.objects.select_related('category'), slug=slug, is_active=True)
     reviews = flavor.reviews.select_related('user').order_by('-created_at')
     related = Flavor.objects.filter(
         category=flavor.category, is_active=True
@@ -162,7 +167,7 @@ def tracking(request):
     if order_id:
         from orders.models import Order
         try:
-            order = Order.objects.get(order_number=order_id)
+            order = Order.objects.prefetch_related('items').get(order_number=order_id)
         except Order.DoesNotExist:
             messages.error(request, 'Order not found.')
     

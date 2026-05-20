@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
+from django.core.cache import cache
 from django.utils.text import slugify
 
 
@@ -19,6 +20,7 @@ class Category(models.Model):
         if not self.slug:
             self.slug = slugify(self.name)
         super().save(*args, **kwargs)
+        cache.delete('store:categories')
 
 
 class Flavor(models.Model):
@@ -65,6 +67,7 @@ class Flavor(models.Model):
         else:
             self.status = 'high'
         super().save(*args, **kwargs)
+        cache.delete('store:flavors:active')
 
     @property
     def display_image(self):
@@ -114,5 +117,13 @@ class SiteSettings(models.Model):
 
     @classmethod
     def get_settings(cls):
+        obj = cache.get('store:site-settings')
+        if obj:
+            return obj
         obj, _ = cls.objects.get_or_create(pk=1)
+        cache.set('store:site-settings', obj, 300)
         return obj
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        cache.delete('store:site-settings')

@@ -1,4 +1,5 @@
 from .models import SiteSettings
+from django.core.cache import cache
 
 
 def cart_count(request):
@@ -8,5 +9,8 @@ def cart_count(request):
 
 
 def site_settings(request):
-    settings = SiteSettings.get_settings()
+    settings = cache.get('store:site-settings')
+    if settings is None:
+        settings = SiteSettings.get_settings()
+        cache.set('store:site-settings', settings, 300)
     return {'site_settings': settings}

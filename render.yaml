@@ -4,7 +4,7 @@ services:
     runtime: python
     plan: free
     buildCommand: ./build.sh
-    startCommand: python manage.py migrate && python manage.py bootstrap_render_data && gunicorn savanna_scoops.wsgi:application
+    startCommand: python manage.py migrate && python manage.py bootstrap_render_data && gunicorn savanna_scoops.wsgi:application --workers 2 --threads 2 --timeout 60 --max-requests 500 --max-requests-jitter 50
     envVars:
       - key: DEBUG
         value: "False"
