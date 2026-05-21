@@ -1,5 +1,49 @@
 # Savanna Scoops Deployment
 
+## Docker
+
+This project now includes a Docker stack for local and server-style runs:
+
+- `Dockerfile` builds the Django/Gunicorn web image.
+- `docker-compose.yml` runs the web app with Postgres.
+- `docker-entrypoint.sh` waits for Postgres, runs migrations, collects static files, and can load starter data.
+- `.env.docker` documents Docker-specific environment values you can pass with `--env-file`.
+
+### Run locally
+
+```bash
+docker compose up --build
+# or, to use values from .env.docker:
+docker compose --env-file .env.docker up --build
+```
+
+Open:
+
+- Customer site: `http://localhost:8000/`
+- Admin panel: `http://localhost:8000/admin-panel/`
+- Django admin: `http://localhost:8000/django-admin/`
+
+By default, the stack uses Postgres and loads `data/render_seed.json` into an empty database. To use the richer demo data command instead, set:
+
+```bash
+SEED_DATA=1
+```
+
+The Docker database connection is pinned to the Compose `db` service so your normal app `.env` cannot accidentally send the container to an external database.
+
+Docker runs with `DOCKER_DEBUG=True` by default for local HTTP access at `http://localhost:8000`. Set `DOCKER_DEBUG=False` only when running behind HTTPS.
+
+### Useful Docker commands
+
+```bash
+docker compose exec web python manage.py createsuperuser
+docker compose exec web python manage.py seed_data
+docker compose down
+docker compose down -v
+```
+
+Use `docker compose down -v` only when you want to delete the local Postgres, media, and static volumes.
+
 ## GitHub
 
 1. Push the project to a GitHub repository.
