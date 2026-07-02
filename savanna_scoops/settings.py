@@ -6,12 +6,28 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = config('SECRET_KEY', default='django-insecure-savanna-scoops-dev-key-2024')
 DEBUG = config('DEBUG', default=True, cast=bool)
+RAILWAY_PUBLIC_DOMAIN = config('RAILWAY_PUBLIC_DOMAIN', default='').strip()
+APP_BASE_URL = config(
+    'APP_BASE_URL',
+    default=f'https://{RAILWAY_PUBLIC_DOMAIN}' if RAILWAY_PUBLIC_DOMAIN else '',
+).strip().rstrip('/')
+
 ALLOWED_HOSTS = [host.strip() for host in config('ALLOWED_HOSTS', default='localhost,127.0.0.1').split(',') if host.strip()]
+if RAILWAY_PUBLIC_DOMAIN and RAILWAY_PUBLIC_DOMAIN not in ALLOWED_HOSTS:
+    ALLOWED_HOSTS.append(RAILWAY_PUBLIC_DOMAIN)
+if APP_BASE_URL:
+    app_host = urlparse(APP_BASE_URL).netloc
+    if app_host and app_host not in ALLOWED_HOSTS:
+        ALLOWED_HOSTS.append(app_host)
+
 CSRF_TRUSTED_ORIGINS = [
     origin.strip()
     for origin in config('CSRF_TRUSTED_ORIGINS', default='').split(',')
     if origin.strip()
 ]
+for origin in (APP_BASE_URL, f'https://{RAILWAY_PUBLIC_DOMAIN}' if RAILWAY_PUBLIC_DOMAIN else ''):
+    if origin and origin not in CSRF_TRUSTED_ORIGINS:
+        CSRF_TRUSTED_ORIGINS.append(origin)
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -177,7 +193,10 @@ MPESA_CONSUMER_KEY = config('MPESA_CONSUMER_KEY', default='')
 MPESA_CONSUMER_SECRET = config('MPESA_CONSUMER_SECRET', default='')
 MPESA_SHORTCODE = config('MPESA_SHORTCODE', default='174379')
 MPESA_PASSKEY = config('MPESA_PASSKEY', default='')
-MPESA_CALLBACK_URL = config('MPESA_CALLBACK_URL', default='https://example.com/payments/mpesa/callback/')
+MPESA_CALLBACK_URL = config(
+    'MPESA_CALLBACK_URL',
+    default=f'{APP_BASE_URL}/payments/mpesa/callback/' if APP_BASE_URL else 'https://example.com/payments/mpesa/callback/',
+)
 MPESA_ENVIRONMENT = config('MPESA_ENVIRONMENT', default='sandbox')
 
 # Email
@@ -189,10 +208,12 @@ EMAIL_HOST_USER = config('EMAIL_HOST_USER', default='')
 EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD', default='')
 DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL', default='noreply@savanascoops.com')
 DEFAULT_FROM_NAME = config('DEFAULT_FROM_NAME', default='Savanna Scoops')
-EMAIL_DELIVERY_BACKEND = config('EMAIL_DELIVERY_BACKEND', default='brevo' if not DEBUG else 'smtp')
+EMAIL_DELIVERY_BACKEND = config('EMAIL_DELIVERY_BACKEND', default='resend' if not DEBUG else 'smtp').lower()
 EMAIL_SEND_ASYNC = config('EMAIL_SEND_ASYNC', default='True' if not DEBUG else 'False', cast=bool)
 BREVO_API_KEY = config('BREVO_API_KEY', default='')
 BREVO_API_URL = config('BREVO_API_URL', default='https://api.brevo.com/v3/smtp/email')
+RESEND_API_KEY = config('RESEND_API_KEY', default='')
+RESEND_API_URL = config('RESEND_API_URL', default='https://api.resend.com/emails')
 
 # Crispy Forms
 CRISPY_ALLOWED_TEMPLATE_PACKS = 'bootstrap5'

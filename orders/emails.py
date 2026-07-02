@@ -33,6 +33,24 @@ def _send_via_brevo(subject, body, recipient_email):
     response.raise_for_status()
 
 
+def _send_via_resend(subject, body, recipient_email):
+    response = requests.post(
+        settings.RESEND_API_URL,
+        headers={
+            'Authorization': f'Bearer {settings.RESEND_API_KEY}',
+            'Content-Type': 'application/json',
+        },
+        json={
+            'from': f'{settings.DEFAULT_FROM_NAME} <{settings.DEFAULT_FROM_EMAIL}>',
+            'to': [recipient_email],
+            'subject': subject,
+            'html': body,
+        },
+        timeout=15,
+    )
+    response.raise_for_status()
+
+
 def send_order_confirmation_email(order_id):
     try:
         order = Order.objects.prefetch_related('items').get(id=order_id)
@@ -47,7 +65,9 @@ def send_order_confirmation_email(order_id):
     subject = f"Order Confirmed - {order.order_number} | Savanna Scoops"
     body = render_to_string('emails/order_confirmation.html', {'order': order})
     try:
-        if settings.EMAIL_DELIVERY_BACKEND == 'brevo' and settings.BREVO_API_KEY:
+        if settings.EMAIL_DELIVERY_BACKEND == 'resend' and settings.RESEND_API_KEY:
+            _send_via_resend(subject, body, order.customer_email)
+        elif settings.EMAIL_DELIVERY_BACKEND == 'brevo' and settings.BREVO_API_KEY:
             _send_via_brevo(subject, body, order.customer_email)
         else:
             send_mail(

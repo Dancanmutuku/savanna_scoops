@@ -1,1 +1,1 @@
-web: gunicorn savanna_scoops.wsgi:application
+web: python manage.py migrate --noinput && python manage.py collectstatic --noinput && python manage.py bootstrap_render_data && gunicorn savanna_scoops.wsgi:application --bind 0.0.0.0:$PORT --workers 2 --threads 2 --timeout 60 --access-logfile - --error-logfile -

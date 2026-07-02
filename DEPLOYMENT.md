@@ -50,6 +50,114 @@ Use `docker compose down -v` only when you want to delete the local Postgres, me
 2. Keep `.env` out of the repository.
 3. Use `.env.example` as the reference for required environment variables.
 
+## Railway
+
+This project is ready for Railway with:
+
+- `railway.json` for the Railway start command and healthcheck.
+- `requirements.txt` for Python dependencies.
+- `gunicorn` for production serving.
+- WhiteNoise for static files.
+- `DATABASE_URL` support for Railway Postgres.
+- Resend API support for production order emails.
+
+### Railway Setup
+
+1. Push this repository to GitHub.
+2. In Railway, create a new project.
+3. Choose **Deploy from GitHub repo** and select this repo.
+4. Add a PostgreSQL database service:
+   - Open the project canvas.
+   - Add **Database > PostgreSQL**.
+5. On the Django app service, open **Variables**.
+6. Paste values based on `.env.railway.example`.
+
+For the database variable, use Railway's service reference:
+
+```env
+DATABASE_URL=${{Postgres.DATABASE_URL}}
+DATABASE_SSLMODE=require
+USE_SQLITE=False
+```
+
+If your Railway Postgres service has a different name, replace `Postgres` with that service name.
+
+### Railway Public URL
+
+After the app deploys:
+
+1. Open the Django app service.
+2. Go to **Settings > Networking**.
+3. Click **Generate Domain**.
+4. Railway will provide a domain like:
+
+```text
+your-app.up.railway.app
+```
+
+Railway provides this domain at runtime as `RAILWAY_PUBLIC_DOMAIN`. The app automatically adds it to `ALLOWED_HOSTS` and `CSRF_TRUSTED_ORIGINS`.
+
+Set:
+
+```env
+APP_BASE_URL=https://${{RAILWAY_PUBLIC_DOMAIN}}
+MPESA_CALLBACK_URL=https://${{RAILWAY_PUBLIC_DOMAIN}}/payments/mpesa/callback/
+```
+
+### Resend Email
+
+Use Resend for production email:
+
+```env
+EMAIL_DELIVERY_BACKEND=resend
+EMAIL_SEND_ASYNC=True
+RESEND_API_KEY=your-resend-api-key
+RESEND_API_URL=https://api.resend.com/emails
+DEFAULT_FROM_NAME=Savanna Scoops
+DEFAULT_FROM_EMAIL=orders@your-verified-domain.com
+```
+
+Resend requires a verified sending domain for production sending. Use an email address from that verified domain for `DEFAULT_FROM_EMAIL`.
+
+### Railway Start Command
+
+Railway uses `railway.json`:
+
+```bash
+python manage.py migrate --noinput && python manage.py collectstatic --noinput && python manage.py bootstrap_render_data && gunicorn savanna_scoops.wsgi:application --bind 0.0.0.0:$PORT --workers 2 --threads 2 --timeout 60 --access-logfile - --error-logfile -
+```
+
+This command:
+
+- runs database migrations,
+- collects static files,
+- loads starter data only when the database is empty,
+- starts Gunicorn on Railway's assigned `$PORT`.
+
+### Required Railway Variables
+
+Minimum production variables:
+
+```env
+SECRET_KEY=
+DEBUG=False
+USE_SQLITE=False
+APP_BASE_URL=https://${{RAILWAY_PUBLIC_DOMAIN}}
+ALLOWED_HOSTS=${{RAILWAY_PUBLIC_DOMAIN}}
+CSRF_TRUSTED_ORIGINS=https://${{RAILWAY_PUBLIC_DOMAIN}}
+DATABASE_URL=${{Postgres.DATABASE_URL}}
+DATABASE_SSLMODE=require
+EMAIL_DELIVERY_BACKEND=resend
+EMAIL_SEND_ASYNC=True
+RESEND_API_KEY=
+DEFAULT_FROM_EMAIL=orders@your-verified-domain.com
+DEFAULT_FROM_NAME=Savanna Scoops
+MPESA_CALLBACK_URL=https://${{RAILWAY_PUBLIC_DOMAIN}}/payments/mpesa/callback/
+MPESA_ENVIRONMENT=sandbox
+```
+
+Add the Google OAuth and M-Pesa credential variables when you are ready to test those flows.
+
 ## Cloudflare
 
 This is a Django application, so it needs a long-running Python server and a persistent database. Do not deploy it directly to Cloudflare Pages as a static site. The practical Cloudflare setup is:

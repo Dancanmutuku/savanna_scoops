@@ -160,6 +160,19 @@ MPESA_ENVIRONMENT=sandbox
 
 Do not commit real secrets to Git.
 
+## Deploying To Railway
+
+Railway deployment notes live in `DEPLOYMENT.md`.
+
+Short version:
+
+- Add a Railway PostgreSQL service.
+- Set `DATABASE_URL=${{Postgres.DATABASE_URL}}`.
+- Set `USE_SQLITE=False`.
+- Set `EMAIL_DELIVERY_BACKEND=resend`.
+- Put your Resend API key in Railway Variables as `RESEND_API_KEY`.
+- Use a verified Resend sender email as `DEFAULT_FROM_EMAIL`.
+
 ## Troubleshooting
 
 If dependencies are missing, make sure the virtual environment is active, then run:
@@ -188,4 +201,3 @@ If ngrok callbacks do not arrive, confirm:
 - `MPESA_CALLBACK_URL` uses the current ngrok HTTPS URL
 - the ngrok host is listed in `ALLOWED_HOSTS`
 - `CSRF_TRUSTED_ORIGINS` includes the ngrok HTTPS origin
-
