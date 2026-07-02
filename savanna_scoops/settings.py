@@ -76,7 +76,8 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'savanna_scoops.wsgi.application'
 
-DATABASE_URL = config('DATABASE_URL', default='')
+USE_SQLITE = config('USE_SQLITE', default=False, cast=bool)
+DATABASE_URL = '' if USE_SQLITE else config('DATABASE_URL', default='')
 if DATABASE_URL:
     parsed = urlparse(DATABASE_URL)
     database_sslmode = config('DATABASE_SSLMODE', default='require').strip()
