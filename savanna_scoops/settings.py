@@ -221,6 +221,7 @@ CRISPY_TEMPLATE_PACK = 'bootstrap5'
 
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
+    "https://scoops-axgjgfb8gbhqefba.austriaeast-01.azurewebsites.net"
     "http://127.0.0.1:3000",
 ]
 
