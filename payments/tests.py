@@ -1,7 +1,8 @@
 import json
 from unittest.mock import Mock, patch
 
-from django.test import TestCase
+from django.contrib.auth.models import User
+from django.test import TestCase, override_settings
 from django.urls import reverse
 
 from orders.models import Order
@@ -21,8 +22,12 @@ class MpesaClientTests(TestCase):
 
 
 class MpesaStatusTests(TestCase):
+    @override_settings(SECURE_SSL_REDIRECT=False)
     def test_string_success_result_code_marks_order_paid_and_queues_email(self):
+        user = User.objects.create_user(username='jane@example.com', email='jane@example.com', password='pass12345')
+        self.client.force_login(user)
         order = Order.objects.create(
+            user=user,
             customer_name='Jane Customer',
             customer_email='jane@example.com',
             customer_phone='+254712345678',

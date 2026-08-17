@@ -1,6 +1,7 @@
 from django.shortcuts import get_object_or_404
 from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
+from django.conf import settings
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 from django.utils import timezone
@@ -32,6 +33,30 @@ def _result_code_as_int(result_code):
 
 def _user_can_access_order(user, order):
     return bool(order and (user.is_staff or order.user_id == user.id))
+
+
+def _user_is_staff(user):
+    return bool(user and user.is_authenticated and user.is_staff)
+
+
+def _json_staff_required(view_func):
+    def wrapper(request, *args, **kwargs):
+        if not _user_is_staff(getattr(request, 'user', None)):
+            return JsonResponse({'success': False, 'error': 'Staff access is required.'}, status=403)
+        return view_func(request, *args, **kwargs)
+    return wrapper
+
+
+def _callback_token_is_valid(request):
+    expected = getattr(settings, 'MPESA_CALLBACK_TOKEN', '')
+    if not expected:
+        return settings.DEBUG
+    provided = (
+        request.headers.get('X-Mpesa-Callback-Token')
+        or request.GET.get('token')
+        or ''
+    )
+    return provided == expected
 
 
 def _callback_metadata_value(callback, name):
@@ -187,6 +212,10 @@ def mpesa_callback(request):
     """M-Pesa callback endpoint."""
     if request.method != 'POST':
         return JsonResponse({'ResultCode': 0, 'ResultDesc': 'OK'})
+
+    if not _callback_token_is_valid(request):
+        logger.warning("Rejected M-Pesa callback with invalid callback token.")
+        return JsonResponse({'ResultCode': 1, 'ResultDesc': 'Unauthorized'}, status=403)
     
     try:
         data = json.loads(request.body)
@@ -202,6 +231,13 @@ def mpesa_callback(request):
         except MpesaTransaction.DoesNotExist:
             logger.warning(f"M-Pesa callback for unknown transaction: {checkout_request_id}")
             return JsonResponse({'ResultCode': 0, 'ResultDesc': 'Accepted'})
+
+        if merchant_request_id and txn.merchant_request_id and merchant_request_id != txn.merchant_request_id:
+            logger.warning(
+                "Rejected M-Pesa callback for %s due to merchant request mismatch.",
+                checkout_request_id,
+            )
+            return JsonResponse({'ResultCode': 0, 'ResultDesc': 'Accepted'})
         
         txn.result_code = result_code
         txn.result_desc = result_desc
@@ -214,9 +250,21 @@ def mpesa_callback(request):
                 return JsonResponse({'ResultCode': 0, 'ResultDesc': 'Accepted'})
 
             receipt = _callback_metadata_value(callback, 'MpesaReceiptNumber')
-            receipt = receipt or _fallback_code('MPESA', checkout_request_id)
+            if not receipt:
+                txn.status = 'failed'
+                txn.result_desc = 'Missing M-Pesa receipt number.'
+                txn.save()
+                logger.warning("Rejected M-Pesa callback for %s due to missing receipt.", checkout_request_id)
+                return JsonResponse({'ResultCode': 0, 'ResultDesc': 'Accepted'})
 
             paid_amount = _decimal_or_none(_callback_metadata_value(callback, 'Amount'))
+            if paid_amount is None:
+                txn.status = 'failed'
+                txn.result_desc = 'Missing or invalid paid amount.'
+                txn.save()
+                logger.warning("Rejected M-Pesa callback for %s due to missing amount.", checkout_request_id)
+                return JsonResponse({'ResultCode': 0, 'ResultDesc': 'Accepted'})
+
             if txn.order and paid_amount is not None and paid_amount != txn.order.total:
                 txn.status = 'failed'
                 txn.result_code = result_code_int
@@ -227,6 +275,20 @@ def mpesa_callback(request):
                     checkout_request_id,
                     paid_amount,
                     txn.order.total,
+                )
+                return JsonResponse({'ResultCode': 0, 'ResultDesc': 'Accepted'})
+
+            provider_status = query_stk_status(checkout_request_id)
+            provider_result_code = _result_code_as_int(provider_status.get('ResultCode'))
+            if provider_result_code != 0:
+                txn.status = 'failed'
+                txn.result_code = provider_result_code
+                txn.result_desc = 'Callback success could not be verified with M-Pesa.'
+                txn.save()
+                logger.warning(
+                    "Rejected M-Pesa callback for %s because provider status was %s.",
+                    checkout_request_id,
+                    provider_result_code,
                 )
                 return JsonResponse({'ResultCode': 0, 'ResultDesc': 'Accepted'})
             
@@ -259,11 +321,11 @@ def mpesa_callback(request):
 
 @require_POST
 @login_required
+@_json_staff_required
 def complete_manual_payment(request):
     """Mark an order paid for non-M-Pesa checkout methods."""
     data = json.loads(request.body)
-    orders = Order.objects.all() if request.user.is_staff else Order.objects.filter(user=request.user)
-    order = get_object_or_404(orders, id=data.get('order_id'))
+    order = get_object_or_404(Order, id=data.get('order_id'))
     if order.payment_status == 'paid':
         return JsonResponse({'success': False, 'error': 'This order is already paid.'}, status=400)
     method = data.get('payment_method', 'Card')

@@ -4,8 +4,8 @@ from urllib.parse import urlparse, unquote
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = config('SECRET_KEY', default='django-insecure-savanna-scoops-dev-key-2024')
-DEBUG = config('DEBUG', default=True, cast=bool)
+SECRET_KEY = config('SECRET_KEY')
+DEBUG = config('DEBUG', default=False, cast=bool)
 RAILWAY_PUBLIC_DOMAIN = config('RAILWAY_PUBLIC_DOMAIN', default='').strip()
 APP_BASE_URL = config(
     'APP_BASE_URL',
@@ -161,19 +161,19 @@ SITE_ID = 1
 LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/'
 LOGIN_URL = '/accounts/login/'
-ACCOUNT_LOGOUT_ON_GET = True
+ACCOUNT_LOGOUT_ON_GET = False
 
 # AllAuth Settings
 ACCOUNT_EMAIL_REQUIRED = True
 ACCOUNT_USERNAME_REQUIRED = False
 ACCOUNT_AUTHENTICATION_METHOD = 'email'
-ACCOUNT_EMAIL_VERIFICATION = 'none'
+ACCOUNT_EMAIL_VERIFICATION = 'mandatory'
 SOCIALACCOUNT_AUTO_SIGNUP = True
 SOCIALACCOUNT_ADAPTER = 'accounts.adapters.SocialAccountAdapter'
-SOCIALACCOUNT_EMAIL_AUTHENTICATION = True
-SOCIALACCOUNT_EMAIL_AUTHENTICATION_AUTO_CONNECT = True
-SOCIALACCOUNT_LOGIN_ON_GET = True
-SOCIALACCOUNT_EMAIL_VERIFICATION = False
+SOCIALACCOUNT_EMAIL_AUTHENTICATION = False
+SOCIALACCOUNT_EMAIL_AUTHENTICATION_AUTO_CONNECT = False
+SOCIALACCOUNT_LOGIN_ON_GET = False
+SOCIALACCOUNT_EMAIL_VERIFICATION = 'mandatory'
 SOCIALACCOUNT_QUERY_EMAIL = True
 
 SOCIALACCOUNT_PROVIDERS = {
@@ -193,10 +193,15 @@ MPESA_CONSUMER_KEY = config('MPESA_CONSUMER_KEY', default='')
 MPESA_CONSUMER_SECRET = config('MPESA_CONSUMER_SECRET', default='')
 MPESA_SHORTCODE = config('MPESA_SHORTCODE', default='174379')
 MPESA_PASSKEY = config('MPESA_PASSKEY', default='')
+MPESA_CALLBACK_TOKEN = config('MPESA_CALLBACK_TOKEN', default='')
+_MPESA_CALLBACK_DEFAULT = f'{APP_BASE_URL}/payments/mpesa/callback/' if APP_BASE_URL else 'https://example.com/payments/mpesa/callback/'
 MPESA_CALLBACK_URL = config(
     'MPESA_CALLBACK_URL',
-    default=f'{APP_BASE_URL}/payments/mpesa/callback/' if APP_BASE_URL else 'https://example.com/payments/mpesa/callback/',
+    default=_MPESA_CALLBACK_DEFAULT,
 )
+if MPESA_CALLBACK_TOKEN and 'token=' not in MPESA_CALLBACK_URL:
+    separator = '&' if '?' in MPESA_CALLBACK_URL else '?'
+    MPESA_CALLBACK_URL = f'{MPESA_CALLBACK_URL}{separator}token={MPESA_CALLBACK_TOKEN}'
 MPESA_ENVIRONMENT = config('MPESA_ENVIRONMENT', default='sandbox')
 
 # Email
@@ -221,7 +226,7 @@ CRISPY_TEMPLATE_PACK = 'bootstrap5'
 
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
-    "https://scoops-axgjgfb8gbhqefba.austriaeast-01.azurewebsites.net"
+    "https://scoops-axgjgfb8gbhqefba.austriaeast-01.azurewebsites.net",
     "http://127.0.0.1:3000",
 ]
 
@@ -241,7 +246,7 @@ if not DEBUG:
     SECURE_HSTS_INCLUDE_SUBDOMAINS = True
     SECURE_HSTS_PRELOAD = True
 
-X_FRAME_OPTIONS = 'SAMEORIGIN'
+X_FRAME_OPTIONS = 'DENY'
 SECURE_CONTENT_TYPE_NOSNIFF = True
 SESSION_COOKIE_HTTPONLY = True
 CSRF_COOKIE_HTTPONLY = False

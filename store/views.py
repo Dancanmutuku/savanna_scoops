@@ -159,6 +159,7 @@ def checkout(request):
     return render(request, 'customer/checkout.html', context)
 
 
+@login_required
 def tracking(request):
     """Order tracking page."""
     order_id = request.GET.get('order_id', '')
@@ -167,7 +168,10 @@ def tracking(request):
     if order_id:
         from orders.models import Order
         try:
-            order = Order.objects.prefetch_related('items').get(order_number=order_id)
+            orders = Order.objects.prefetch_related('items')
+            if not request.user.is_staff:
+                orders = orders.filter(user=request.user)
+            order = orders.get(order_number=order_id)
         except Order.DoesNotExist:
             messages.error(request, 'Order not found.')
     

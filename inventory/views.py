@@ -2,6 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import user_passes_test
 from django.contrib import admin, messages
 from django.core.cache import cache
+from django.core.exceptions import PermissionDenied
 from django.forms import modelform_factory
 from django.http import JsonResponse
 from django.db.models import Sum, F
@@ -244,9 +245,24 @@ def invoice_view(request, order_id):
     })
 
 
-def _admin_model_registry():
+def _model_permission(model, action):
+    return f'{model._meta.app_label}.{action}_{model._meta.model_name}'
+
+
+def _user_has_model_perm(user, model, action):
+    return user.has_perm(_model_permission(model, action))
+
+
+def _require_model_perm(user, model, action):
+    if not _user_has_model_perm(user, model, action):
+        raise PermissionDenied
+
+
+def _admin_model_registry(user=None, action='view'):
     registry = []
     for model, model_admin in admin.site._registry.items():
+        if user is not None and not _user_has_model_perm(user, model, action):
+            continue
         registry.append({
             'model': model,
             'label': model._meta.label_lower.replace('.', '/'),
@@ -270,7 +286,7 @@ def _registered_model(app_label, model_name):
 @staff_required
 def admin_models_view(request):
     return render(request, 'admin_panel/models.html', {
-        'models': _admin_model_registry(),
+        'models': _admin_model_registry(request.user),
         'admin_section': 'system',
     })
 
@@ -281,6 +297,7 @@ def admin_model_list(request, app_label, model_name):
     if not model:
         messages.error(request, 'That admin model is not available.')
         return redirect('admin_models')
+    _require_model_perm(request.user, model, 'view')
 
     objects = model.objects.all()[:200]
     fields = [field for field in model._meta.fields if field.name != 'id'][:6]
@@ -303,6 +320,7 @@ def admin_model_form(request, app_label, model_name, object_id=None):
     if not model:
         messages.error(request, 'That admin model is not available.')
         return redirect('admin_models')
+    _require_model_perm(request.user, model, 'change' if object_id else 'add')
 
     instance = get_object_or_404(model, pk=object_id) if object_id else None
     form_class = modelform_factory(model, fields='__all__')
@@ -329,6 +347,7 @@ def admin_model_delete(request, app_label, model_name, object_id):
     if not model:
         messages.error(request, 'That admin model is not available.')
         return redirect('admin_models')
+    _require_model_perm(request.user, model, 'delete')
     instance = get_object_or_404(model, pk=object_id)
     if request.method == 'POST':
         try:
