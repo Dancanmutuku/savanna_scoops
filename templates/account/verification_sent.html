@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}Check Your Email - Savanna Scoops{% endblock %}
+{% block body %}
+<div class="min-h-screen bg-surface flex items-center justify-center p-4">
+  <div class="w-full max-w-md">
+    <div class="text-center mb-10">
+      <div class="w-16 h-16 bg-primary rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg shadow-primary/20 text-white font-sans font-black text-xl">SS</div>
+      <h1 class="text-3xl font-sans font-black tracking-tight">Check your email</h1>
+      <p class="text-on-surface-variant mt-2">We sent a confirmation link to finish setting up your account.</p>
+    </div>
+
+    <div class="sculpted-card rounded-[2rem] p-8">
+      <div class="p-4 rounded-2xl mb-5 bg-surface-container-low text-on-surface-variant text-sm leading-6">
+        Open the email from Savanna Scoops and tap the confirmation link. If it does not arrive soon, check your spam or promotions folder.
+      </div>
+
+      <div class="space-y-3">
+        <a href="{% url 'account_login' %}" class="w-full flex items-center justify-center py-4 bg-primary text-white rounded-2xl font-black text-lg shadow-lg shadow-primary/20 hover:opacity-90 transition-all">
+          Back to Sign In
+        </a>
+        <a href="{% url 'shop' %}" class="w-full flex items-center justify-center py-4 bg-surface-container-high border-2 border-outline-variant/20 rounded-2xl font-bold text-on-surface hover:bg-surface-container-highest transition-all">
+          Visit the Shop
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
