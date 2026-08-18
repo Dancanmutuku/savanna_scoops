@@ -50,3 +50,31 @@ class UserConsent(models.Model):
     @property
     def fully_accepted(self):
         return self.terms_accepted and self.privacy_accepted
+
+
+class UserProfile(models.Model):
+    """
+    Stores local profile details that do not belong on Django's
+    built-in User model.
+    """
+
+    user = models.OneToOneField(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="profile",
+    )
+    phone_number = models.CharField(
+        max_length=30,
+        unique=True,
+        null=True,
+        blank=True,
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "User Profile"
+        verbose_name_plural = "User Profiles"
+
+    def __str__(self):
+        return f"Profile for {self.user.username}"

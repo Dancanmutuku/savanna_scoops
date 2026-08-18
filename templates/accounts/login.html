@@ -1,29 +1,38 @@
 {% extends "base.html" %}
-{% block title %}Sign In – Savanna Scoops{% endblock %}
+
+{% block title %}Sign In - Savanna Scoops{% endblock %}
+
 {% block body %}
 <div class="min-h-screen bg-surface flex items-center justify-center p-4">
   <div class="w-full max-w-md">
     <div class="text-center mb-10">
-      <div class="w-16 h-16 bg-secondary rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg shadow-secondary/20 text-2xl">🍦</div>
+      <div class="w-16 h-16 bg-secondary rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg shadow-secondary/20">
+        <span class="text-white font-sans font-black text-2xl">S</span>
+      </div>
       <h1 class="text-3xl font-sans font-black tracking-tight">Welcome back</h1>
       <p class="text-on-surface-variant mt-2">Sign in to your Savanna Scoops account</p>
     </div>
 
     <div class="sculpted-card rounded-[2rem] p-8">
-      {% if messages %}{% for msg in messages %}<div class="p-4 rounded-2xl mb-4 {% if msg.tags == 'error' %}bg-tertiary/10 text-tertiary{% else %}bg-green-50 text-green-700{% endif %} text-sm font-bold">{{ msg }}</div>{% endfor %}{% endif %}
-      
+      {% if messages %}
+        {% for msg in messages %}
+          <div class="p-4 rounded-2xl mb-4 {% if msg.tags == 'error' %}bg-tertiary/10 text-tertiary{% else %}bg-green-50 text-green-700{% endif %} text-sm font-bold">{{ msg }}</div>
+        {% endfor %}
+      {% endif %}
+
       <form method="post" class="space-y-5">
         {% csrf_token %}
         <input type="hidden" name="next" value="{{ next }}">
         <div>
-          <label class="text-[10px] font-black uppercase tracking-[0.2em] text-on-surface-variant mb-2 block">Email or username</label>
-          <input type="text" name="email" required autofocus placeholder="admin or jane@example.com"
-                 class="w-full bg-surface-container-low border-2 border-outline-variant/20 rounded-2xl py-4 px-4 font-semibold focus:border-primary/40 outline-none transition-all"/>
+          <label class="text-[10px] font-black uppercase tracking-[0.2em] text-on-surface-variant mb-2 block">Username, Email, or Phone</label>
+          <input type="text" name="identifier" required autofocus placeholder="janemwangi, jane@example.com, or +2547..."
+                 value="{{ request.POST.identifier|default:request.POST.email }}"
+                 class="w-full bg-surface-container-low border-2 border-outline-variant/20 rounded-2xl py-4 px-4 font-semibold focus:border-primary/40 outline-none transition-all">
         </div>
         <div>
           <label class="text-[10px] font-black uppercase tracking-[0.2em] text-on-surface-variant mb-2 block">Password</label>
-          <input type="password" name="password" required placeholder="••••••••"
-                 class="w-full bg-surface-container-low border-2 border-outline-variant/20 rounded-2xl py-4 px-4 font-semibold focus:border-primary/40 outline-none transition-all"/>
+          <input type="password" name="password" required placeholder="Password"
+                 class="w-full bg-surface-container-low border-2 border-outline-variant/20 rounded-2xl py-4 px-4 font-semibold focus:border-primary/40 outline-none transition-all">
         </div>
         <button type="submit" class="w-full py-4 bg-primary text-white rounded-2xl font-black text-lg shadow-lg shadow-primary/20 hover:opacity-90 transition-all">
           Sign In
@@ -43,11 +52,11 @@
     </div>
 
     <p class="text-center mt-6 text-sm text-on-surface-variant">
-      Don't have an account? 
+      Don't have an account?
       <a href="{% url 'account_signup' %}" class="text-secondary font-bold hover:underline">Create one</a>
     </p>
     <p class="text-center mt-3">
-      <a href="{% url 'shop' %}" class="text-xs text-on-surface-variant hover:text-on-surface">← Back to shop</a>
+      <a href="{% url 'shop' %}" class="text-xs text-on-surface-variant hover:text-on-surface">Back to shop</a>
     </p>
   </div>
 </div>

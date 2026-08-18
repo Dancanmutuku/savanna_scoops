@@ -8,12 +8,47 @@ from django.urls import get_resolver
 from django import forms
 from django.contrib.auth.models import User
 from django.utils import timezone
+from django.db.models import Q
 from allauth.account.utils import complete_signup
 from allauth.socialaccount import app_settings as socialaccount_settings
 from allauth.socialaccount.adapter import get_adapter as get_socialaccount_adapter
 from allauth.socialaccount.models import SocialLogin
 
-from .models import UserConsent
+from .models import UserConsent, UserProfile
+
+
+def normalize_phone_number(phone_number):
+    phone_number = (phone_number or "").strip()
+
+    if not phone_number:
+        return ""
+
+    return (
+        phone_number
+        .replace(" ", "")
+        .replace("-", "")
+        .replace("(", "")
+        .replace(")", "")
+    )
+
+
+def get_user_for_identifier(identifier):
+    identifier = (identifier or "").strip()
+
+    if not identifier:
+        return None
+
+    normalized_phone = normalize_phone_number(identifier)
+
+    return (
+        User.objects
+        .filter(
+            Q(username__iexact=identifier)
+            | Q(email__iexact=identifier)
+            | Q(profile__phone_number__iexact=normalized_phone)
+        )
+        .first()
+    )
 
 
 class RegisterForm(forms.ModelForm):
@@ -37,19 +72,57 @@ class RegisterForm(forms.ModelForm):
         required=True,
     )
 
+    email = forms.EmailField(
+        required=False,
+        label="Email address",
+    )
+
+    phone_number = forms.CharField(
+        max_length=30,
+        required=False,
+        label="Phone number",
+    )
+
     class Meta:
         model = User
-        fields = ["first_name", "last_name", "email"]
+        fields = ["first_name", "last_name", "username", "email"]
+
+    def clean_username(self):
+        username = self.cleaned_data.get("username", "").strip()
+
+        if User.objects.filter(username__iexact=username).exists():
+            raise forms.ValidationError(
+                "An account with this username already exists."
+            )
+
+        return username
 
     def clean_email(self):
-        email = self.cleaned_data.get("email")
+        email = self.cleaned_data.get("email", "").strip().lower()
 
-        if User.objects.filter(email__iexact=email).exists():
+        if email and User.objects.filter(email__iexact=email).exists():
             raise forms.ValidationError(
                 "An account with this email already exists."
             )
 
         return email
+
+    def clean_phone_number(self):
+        phone_number = normalize_phone_number(
+            self.cleaned_data.get("phone_number")
+        )
+
+        if (
+            phone_number
+            and UserProfile.objects.filter(
+                phone_number__iexact=phone_number
+            ).exists()
+        ):
+            raise forms.ValidationError(
+                "An account with this phone number already exists."
+            )
+
+        return phone_number
 
     def clean(self):
         data = super().clean()
@@ -62,14 +135,19 @@ class RegisterForm(forms.ModelForm):
                 "Passwords do not match."
             )
 
+        if not data.get("email") and not data.get("phone_number"):
+            raise forms.ValidationError(
+                "Enter either an email address or a phone number."
+            )
+
         return data
 
     def save(self, commit=True):
         user = super().save(commit=False)
 
-        email = self.cleaned_data["email"].strip().lower()
+        email = self.cleaned_data.get("email", "").strip().lower()
 
-        user.username = email
+        user.username = self.cleaned_data["username"].strip()
         user.email = email
 
         user.set_password(
@@ -78,6 +156,10 @@ class RegisterForm(forms.ModelForm):
 
         if commit:
             user.save()
+            UserProfile.objects.create(
+                user=user,
+                phone_number=self.cleaned_data.get("phone_number") or None,
+            )
 
         return user
 
@@ -122,6 +204,23 @@ class GoogleOnboardingForm(forms.Form):
         },
     )
 
+    def clean_phone_number(self):
+        phone_number = normalize_phone_number(
+            self.cleaned_data.get("phone_number")
+        )
+
+        if (
+            phone_number
+            and UserProfile.objects.filter(
+                phone_number__iexact=phone_number
+            ).exists()
+        ):
+            raise forms.ValidationError(
+                "An account with this phone number already exists."
+            )
+
+        return phone_number
+
 
 def login_view(request):
     next_url = (
@@ -153,9 +252,22 @@ def login_view(request):
     if request.method == "POST":
 
         identifier = request.POST.get(
-            "email",
-            "",
+            "identifier",
+            request.POST.get(
+                "email",
+                "",
+            ),
         ).strip()
+
+        resolved_user = get_user_for_identifier(
+            identifier
+        )
+
+        username = (
+            resolved_user.username
+            if resolved_user
+            else identifier
+        )
 
         password = request.POST.get(
             "password",
@@ -164,7 +276,7 @@ def login_view(request):
 
         user = authenticate(
             request,
-            username=identifier,
+            username=username,
             password=password,
         )
 
@@ -182,7 +294,7 @@ def login_view(request):
 
         messages.error(
             request,
-            "Invalid username/email or password.",
+            "Invalid username, email, phone, or password.",
         )
 
     google_app = (
@@ -240,7 +352,7 @@ def register_view(request):
         login(
             request,
             user,
-            backend="django.contrib.auth.backends.ModelBackend",
+            backend="accounts.backends.UsernameOrEmailBackend",
         )
 
         messages.success(
@@ -443,6 +555,11 @@ def google_onboarding_complete(request):
         privacy_accepted_at=timezone.now(),
     )
 
+    UserProfile.objects.create(
+        user=user,
+        phone_number=onboarding.get("phone_number") or None,
+    )
+
     request.session.pop(
         "google_social_signup",
         None,
@@ -484,6 +601,10 @@ def profile_view(request, username=None):
 
     from orders.models import Order
 
+    profile, _ = UserProfile.objects.get_or_create(
+        user=request.user
+    )
+
     if username and username not in {
         request.user.username,
         request.user.email,
@@ -514,10 +635,39 @@ def profile_view(request, username=None):
 
         request.user.save()
 
-        messages.success(
-            request,
-            "Profile updated!",
+        phone_number = normalize_phone_number(
+            request.POST.get(
+                "phone_number",
+                "",
+            )
         )
+
+        phone_taken = (
+            phone_number
+            and UserProfile.objects
+            .filter(phone_number__iexact=phone_number)
+            .exclude(user=request.user)
+            .exists()
+        )
+
+        if phone_taken:
+            messages.error(
+                request,
+                "An account with this phone number already exists.",
+            )
+        else:
+            UserProfile.objects.update_or_create(
+                user=request.user,
+                defaults={
+                    "phone_number": phone_number or None,
+                },
+            )
+            profile.phone_number = phone_number or None
+
+            messages.success(
+                request,
+                "Profile updated!",
+            )
 
     orders = (
         Order.objects
@@ -530,5 +680,6 @@ def profile_view(request, username=None):
         "accounts/profile.html",
         {
             "orders": orders,
+            "profile": profile,
         },
     )
