@@ -26,7 +26,7 @@ class RegisterForm(forms.ModelForm):
             raise forms.ValidationError('An account with this email already exists.')
         return email
 
-    def clean(self):
+    def clean(self): 
         data = super().clean()
         p1 = data.get('password1')
         p2 = data.get('password2')
