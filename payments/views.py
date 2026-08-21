@@ -143,181 +143,652 @@ def initiate_mpesa(request):
 @require_POST
 @login_required
 def check_payment_status(request):
-    """Poll payment status."""
-    data = json.loads(request.body)
-    checkout_request_id = data.get('checkout_request_id')
-    
+    try:
+        data = json.loads(request.body or "{}")
+    except json.JSONDecodeError:
+        return JsonResponse(
+            {
+                "success": False,
+                "error": "Invalid request data.",
+            },
+            status=400,
+        )
+
+    checkout_request_id = data.get("checkout_request_id")
+
     if not checkout_request_id:
-        return JsonResponse({'success': False, 'error': 'No checkout ID'}, status=400)
-    
+        return JsonResponse(
+            {
+                "success": False,
+                "error": "No checkout ID provided.",
+            },
+            status=400,
+        )
+
+    # ---------------------------------------------------------
+    # Find transaction
+    # ---------------------------------------------------------
+
     try:
-        txn = MpesaTransaction.objects.get(checkout_request_id=checkout_request_id)
+        txn = (
+            MpesaTransaction.objects
+            .select_related("order")
+            .get(
+                checkout_request_id=checkout_request_id
+            )
+        )
+
     except MpesaTransaction.DoesNotExist:
-        return JsonResponse({'success': False, 'error': 'Transaction not found'}, status=404)
+        return JsonResponse(
+            {
+                "success": False,
+                "error": "Transaction not found.",
+            },
+            status=404,
+        )
 
-    if txn.order and not _user_can_access_order(request.user, txn.order):
-        return JsonResponse({'success': False, 'error': 'Transaction not found'}, status=404)
-    
-    if txn.status == 'success':
-        return JsonResponse({
-            'success': True,
-            'status': 'success',
-            'order_number': txn.order.order_number if txn.order else '',
-            'receipt': txn.mpesa_receipt_number,
-        })
-    
-    # Query M-Pesa
+    # ---------------------------------------------------------
+    # Security: make sure the logged-in user owns the order
+    # ---------------------------------------------------------
+
+    if txn.order and not _user_can_access_order(
+        request.user,
+        txn.order,
+    ):
+        return JsonResponse(
+            {
+                "success": False,
+                "error": "Transaction not found.",
+            },
+            status=404,
+        )
+
+    # ---------------------------------------------------------
+    # If callback already confirmed payment, trust local DB
+    # ---------------------------------------------------------
+
+    if (
+        txn.status == "success"
+        and txn.order
+        and txn.order.payment_status == "paid"
+    ):
+        return JsonResponse(
+            {
+                "success": True,
+                "status": "success",
+                "order_number": txn.order.order_number,
+                "receipt": txn.mpesa_receipt_number or "",
+                "message": "Payment confirmed.",
+            }
+        )
+
+    # ---------------------------------------------------------
+    # If already cancelled, don't query Safaricom again
+    # ---------------------------------------------------------
+
+    if txn.status == "cancelled":
+        return JsonResponse(
+            {
+                "success": False,
+                "status": "cancelled",
+                "error": "Payment was cancelled.",
+            }
+        )
+
+    # ---------------------------------------------------------
+    # If already failed, return the stored failure
+    # ---------------------------------------------------------
+
+    if txn.status == "failed":
+        return JsonResponse(
+            {
+                "success": False,
+                "status": "failed",
+                "error": txn.result_desc or "Payment failed.",
+            }
+        )
+
+    # ---------------------------------------------------------
+    # Query Safaricom
+    # ---------------------------------------------------------
+
     try:
-        result = query_stk_status(checkout_request_id)
-    except Exception:
-        logger.exception("Unexpected M-Pesa status check failure for %s.", checkout_request_id)
-        result = {'success': False, 'error': 'Payment status is temporarily unavailable'}
+        result = query_stk_status(
+            checkout_request_id
+        )
 
-    result_code = _result_code_as_int(result.get('ResultCode'))
-    
+    except Exception:
+        logger.exception(
+            "Unexpected M-Pesa status check failure for %s.",
+            checkout_request_id,
+        )
+
+        # DO NOT mark transaction failed.
+        # Safaricom may be temporarily unavailable.
+        return JsonResponse(
+            {
+                "success": False,
+                "status": "pending",
+                "retry": True,
+                "message": (
+                    "Payment status is temporarily "
+                    "unavailable. Please wait..."
+                ),
+            }
+        )
+
+    # ---------------------------------------------------------
+    # Safaricom returned no usable response
+    # ---------------------------------------------------------
+
+    if not result:
+        logger.warning(
+            "Empty M-Pesa status response for %s.",
+            checkout_request_id,
+        )
+
+        return JsonResponse(
+            {
+                "success": False,
+                "status": "pending",
+                "retry": True,
+                "message": (
+                    "Payment status is temporarily "
+                    "unavailable. Please wait..."
+                ),
+            }
+        )
+
+    # ---------------------------------------------------------
+    # Extract ResultCode
+    # ---------------------------------------------------------
+
+    result_code = _result_code_as_int(
+        result.get("ResultCode")
+    )
+
+    result_desc = (
+        result.get("ResultDesc")
+        or result.get("error")
+        or ""
+    )
+
+    # ---------------------------------------------------------
+    # SUCCESS
+    # ---------------------------------------------------------
+
     if result_code == 0:
+        receipt = txn.mpesa_receipt_number
+
         with transaction.atomic():
-            txn.status = 'success'
+
+            txn.status = "success"
             txn.result_code = 0
-            txn.mpesa_receipt_number = txn.mpesa_receipt_number or _fallback_code('MPESA', checkout_request_id)
-            txn.save()
+
+            if result_desc:
+                txn.result_desc = result_desc
+
+            txn.save(
+                update_fields=[
+                    "status",
+                    "result_code",
+                    "result_desc",
+                ]
+            )
+
             if txn.order:
+
                 _mark_order_paid(
                     txn.order,
-                    'M-Pesa',
-                    txn.mpesa_receipt_number,
-                    f'Payment received via M-Pesa. Receipt: {txn.mpesa_receipt_number}',
+                    "M-Pesa",
+                    receipt or _fallback_code(
+                        "MPESA",
+                        checkout_request_id,
+                    ),
+                    (
+                        "Payment received via M-Pesa. "
+                        f"Receipt: {receipt or 'Pending callback receipt'}"
+                    ),
                 )
-        return JsonResponse({
-            'success': True,
-            'status': 'success',
-            'order_number': txn.order.order_number if txn.order else '',
-            'receipt': txn.mpesa_receipt_number,
-        })
-    
-    elif result_code == 1032:
-        with transaction.atomic():
-            txn.status = 'cancelled'
-            txn.result_desc = 'User cancelled'
-            txn.save()
-            if txn.order:
-                _mark_order_cancelled(txn.order, 'M-Pesa prompt was cancelled by the customer.')
-        return JsonResponse({'success': False, 'status': 'cancelled', 'error': 'Payment has been canceled.'})
-    
-    return JsonResponse({'success': False, 'status': 'pending', 'message': 'Waiting for payment...'})
 
+        return JsonResponse(
+            {
+                "success": True,
+                "status": "success",
+                "order_number": (
+                    txn.order.order_number
+                    if txn.order
+                    else ""
+                ),
+                "receipt": receipt or "",
+                "message": "Payment confirmed.",
+            }
+        )
+    # CUSTOMER CANCELLED STK PROMPT
+    if result_code == 1032:
+
+        with transaction.atomic():
+
+            txn.status = "cancelled"
+            txn.result_code = 1032
+            txn.result_desc = (
+                "User cancelled the M-Pesa payment."
+            )
+
+            txn.save(
+                update_fields=[
+                    "status",
+                    "result_code",
+                    "result_desc",
+                ]
+            )
+
+            if txn.order:
+                _mark_order_cancelled(
+                    txn.order,
+                    "M-Pesa payment was cancelled by the customer.",
+                )
+
+        return JsonResponse(
+            {
+                "success": False,
+                "status": "cancelled",
+                "error": "Payment was cancelled.",
+            }
+        )
+    # EXPLICIT M-PESA FAILURE
+    if result_code is not None:
+
+        logger.warning(
+            "M-Pesa payment failed for %s. "
+            "ResultCode=%s ResultDesc=%s",
+            checkout_request_id,
+            result_code,
+            result_desc,
+        )
+
+        with transaction.atomic():
+
+            txn.status = "failed"
+            txn.result_code = result_code
+            txn.result_desc = (
+                result_desc or "M-Pesa payment failed."
+            )
+
+            txn.save(
+                update_fields=[
+                    "status",
+                    "result_code",
+                    "result_desc",
+                ]
+            )
+
+            if txn.order:
+                _mark_order_cancelled(
+                    txn.order,
+                    (
+                        "M-Pesa payment failed. "
+                        f"{result_desc}"
+                    ),
+                )
+
+        return JsonResponse(
+            {
+                "success": False,
+                "status": "failed",
+                "error": (
+                    result_desc
+                    or "M-Pesa payment failed."
+                ),
+            }
+        )
+    logger.warning(
+        "M-Pesa status unavailable for %s. "
+        "Response: %s",
+        checkout_request_id,
+        result,
+    )
+
+    return JsonResponse(
+        {
+            "success": False,
+            "status": "pending",
+            "retry": True,
+            "message": (
+                "We are still waiting for M-Pesa "
+                "to confirm your payment."
+            ),
+        }
+    )
 
 @csrf_exempt
 def mpesa_callback(request):
-    """M-Pesa callback endpoint."""
-    if request.method != 'POST':
-        return JsonResponse({'ResultCode': 0, 'ResultDesc': 'OK'})
+    """
+    M-Pesa callback endpoint.
+
+    A successful callback from Safaricom is validated using:
+    - CheckoutRequestID
+    - MerchantRequestID
+    - M-Pesa receipt number
+    - Paid amount
+
+    We do NOT perform a second STK status query here.
+    A temporary failure of the query API must not turn a
+    successful payment callback into a failed payment.
+    """
+
+    if request.method != "POST":
+        return JsonResponse({
+            "ResultCode": 0,
+            "ResultDesc": "OK",
+        })
 
     if not _callback_token_is_valid(request):
-        logger.warning("Rejected M-Pesa callback with invalid callback token.")
-        return JsonResponse({'ResultCode': 1, 'ResultDesc': 'Unauthorized'}, status=403)
-    
+        logger.warning(
+            "Rejected M-Pesa callback with invalid callback token."
+        )
+
+        return JsonResponse(
+            {
+                "ResultCode": 1,
+                "ResultDesc": "Unauthorized",
+            },
+            status=403,
+        )
+
     try:
         data = json.loads(request.body)
-        callback = data.get('Body', {}).get('stkCallback', {})
-        
-        checkout_request_id = callback.get('CheckoutRequestID')
-        merchant_request_id = callback.get('MerchantRequestID')
-        result_code = callback.get('ResultCode')
-        result_desc = callback.get('ResultDesc', '')
-        
-        try:
-            txn = MpesaTransaction.objects.get(checkout_request_id=checkout_request_id)
-        except MpesaTransaction.DoesNotExist:
-            logger.warning(f"M-Pesa callback for unknown transaction: {checkout_request_id}")
-            return JsonResponse({'ResultCode': 0, 'ResultDesc': 'Accepted'})
 
-        if merchant_request_id and txn.merchant_request_id and merchant_request_id != txn.merchant_request_id:
+        callback = (
+            data
+            .get("Body", {})
+            .get("stkCallback", {})
+        )
+
+        checkout_request_id = callback.get(
+            "CheckoutRequestID"
+        )
+
+        merchant_request_id = callback.get(
+            "MerchantRequestID"
+        )
+
+        result_code = callback.get(
+            "ResultCode"
+        )
+
+        result_desc = callback.get(
+            "ResultDesc",
+            "",
+        )
+
+        if not checkout_request_id:
             logger.warning(
-                "Rejected M-Pesa callback for %s due to merchant request mismatch.",
+                "Received M-Pesa callback without CheckoutRequestID."
+            )
+
+            return JsonResponse({
+                "ResultCode": 0,
+                "ResultDesc": "Accepted",
+            })
+
+        try:
+            txn = MpesaTransaction.objects.get(
+                checkout_request_id=checkout_request_id
+            )
+
+        except MpesaTransaction.DoesNotExist:
+
+            logger.warning(
+                "M-Pesa callback for unknown transaction: %s",
                 checkout_request_id,
             )
-            return JsonResponse({'ResultCode': 0, 'ResultDesc': 'Accepted'})
-        
-        txn.result_code = result_code
+
+            return JsonResponse({
+                "ResultCode": 0,
+                "ResultDesc": "Accepted",
+            })
+
+        # ---------------------------------------------------------
+        # Validate MerchantRequestID
+        # ---------------------------------------------------------
+
+        if (
+            merchant_request_id
+            and txn.merchant_request_id
+            and merchant_request_id != txn.merchant_request_id
+        ):
+            logger.warning(
+                "Rejected M-Pesa callback for %s due to "
+                "merchant request mismatch.",
+                checkout_request_id,
+            )
+
+            return JsonResponse({
+                "ResultCode": 0,
+                "ResultDesc": "Accepted",
+            })
+
+        result_code_int = _result_code_as_int(
+            result_code
+        )
+
+        txn.result_code = result_code_int
         txn.result_desc = result_desc
-        
-        result_code_int = _result_code_as_int(result_code)
+
+        # =========================================================
+        # SUCCESSFUL PAYMENT
+        # =========================================================
 
         if result_code_int == 0:
-            if txn.status == 'success' and txn.order and txn.order.payment_status == 'paid':
-                logger.info("Ignoring duplicate M-Pesa success callback for %s.", checkout_request_id)
-                return JsonResponse({'ResultCode': 0, 'ResultDesc': 'Accepted'})
 
-            receipt = _callback_metadata_value(callback, 'MpesaReceiptNumber')
+            # Prevent duplicate processing
+            if (
+                txn.status == "success"
+                and txn.order
+                and txn.order.payment_status == "paid"
+            ):
+                logger.info(
+                    "Ignoring duplicate M-Pesa success callback "
+                    "for %s.",
+                    checkout_request_id,
+                )
+
+                return JsonResponse({
+                    "ResultCode": 0,
+                    "ResultDesc": "Accepted",
+                })
+
+            # -----------------------------------------------------
+            # Get actual M-Pesa receipt
+            # -----------------------------------------------------
+
+            receipt = _callback_metadata_value(
+                callback,
+                "MpesaReceiptNumber",
+            )
+
             if not receipt:
-                txn.status = 'failed'
-                txn.result_desc = 'Missing M-Pesa receipt number.'
+                txn.status = "failed"
+                txn.result_desc = (
+                    "Missing M-Pesa receipt number."
+                )
                 txn.save()
-                logger.warning("Rejected M-Pesa callback for %s due to missing receipt.", checkout_request_id)
-                return JsonResponse({'ResultCode': 0, 'ResultDesc': 'Accepted'})
 
-            paid_amount = _decimal_or_none(_callback_metadata_value(callback, 'Amount'))
-            if paid_amount is None:
-                txn.status = 'failed'
-                txn.result_desc = 'Missing or invalid paid amount.'
-                txn.save()
-                logger.warning("Rejected M-Pesa callback for %s due to missing amount.", checkout_request_id)
-                return JsonResponse({'ResultCode': 0, 'ResultDesc': 'Accepted'})
-
-            if txn.order and paid_amount is not None and paid_amount != txn.order.total:
-                txn.status = 'failed'
-                txn.result_code = result_code_int
-                txn.result_desc = f'Amount mismatch. Paid {paid_amount}, expected {txn.order.total}.'
-                txn.save()
                 logger.warning(
-                    "Rejected M-Pesa callback for %s due to amount mismatch. Paid: %s Expected: %s",
+                    "Rejected M-Pesa callback for %s because "
+                    "receipt number was missing.",
+                    checkout_request_id,
+                )
+
+                return JsonResponse({
+                    "ResultCode": 0,
+                    "ResultDesc": "Accepted",
+                })
+
+            # -----------------------------------------------------
+            # Get actual amount paid
+            # -----------------------------------------------------
+
+            paid_amount = _decimal_or_none(
+                _callback_metadata_value(
+                    callback,
+                    "Amount",
+                )
+            )
+
+            if paid_amount is None:
+                txn.status = "failed"
+                txn.result_desc = (
+                    "Missing or invalid paid amount."
+                )
+                txn.save()
+
+                logger.warning(
+                    "Rejected M-Pesa callback for %s because "
+                    "amount was missing or invalid.",
+                    checkout_request_id,
+                )
+
+                return JsonResponse({
+                    "ResultCode": 0,
+                    "ResultDesc": "Accepted",
+                })
+
+            # -----------------------------------------------------
+            # Verify amount
+            # -----------------------------------------------------
+
+            if (
+                txn.order
+                and paid_amount != txn.order.total
+            ):
+                txn.status = "failed"
+                txn.result_code = result_code_int
+                txn.result_desc = (
+                    f"Amount mismatch. "
+                    f"Paid {paid_amount}, "
+                    f"expected {txn.order.total}."
+                )
+
+                txn.save()
+
+                logger.warning(
+                    "Rejected M-Pesa callback for %s due to "
+                    "amount mismatch. Paid: %s Expected: %s",
                     checkout_request_id,
                     paid_amount,
                     txn.order.total,
                 )
-                return JsonResponse({'ResultCode': 0, 'ResultDesc': 'Accepted'})
 
-            provider_status = query_stk_status(checkout_request_id)
-            provider_result_code = _result_code_as_int(provider_status.get('ResultCode'))
-            if provider_result_code != 0:
-                txn.status = 'failed'
-                txn.result_code = provider_result_code
-                txn.result_desc = 'Callback success could not be verified with M-Pesa.'
-                txn.save()
-                logger.warning(
-                    "Rejected M-Pesa callback for %s because provider status was %s.",
-                    checkout_request_id,
-                    provider_result_code,
-                )
-                return JsonResponse({'ResultCode': 0, 'ResultDesc': 'Accepted'})
-            
+                return JsonResponse({
+                    "ResultCode": 0,
+                    "ResultDesc": "Accepted",
+                })
+
+            # =====================================================
+            # PAYMENT IS VALID
+            # =====================================================
+
             with transaction.atomic():
-                txn.status = 'success'
+
+                txn.status = "success"
                 txn.result_code = result_code_int
+                txn.result_desc = result_desc
                 txn.mpesa_receipt_number = receipt
+
                 txn.save()
 
                 if txn.order:
-                    _mark_order_paid(txn.order, 'M-Pesa', receipt, f'M-Pesa payment confirmed. Receipt: {receipt}')
+
+                    _mark_order_paid(
+                        txn.order,
+                        "M-Pesa",
+                        receipt,
+                        (
+                            "M-Pesa payment confirmed. "
+                            f"Receipt: {receipt}"
+                        ),
+                    )
+
+            logger.info(
+                "M-Pesa payment successfully confirmed. "
+                "Checkout: %s | Receipt: %s | Amount: %s",
+                checkout_request_id,
+                receipt,
+                paid_amount,
+            )
+
+        # =========================================================
+        # CUSTOMER CANCELLED PAYMENT
+        # =========================================================
+
         elif result_code_int == 1032:
-            with transaction.atomic():
-                txn.status = 'cancelled'
-                txn.result_code = result_code_int
-                txn.save()
-                if txn.order:
-                    _mark_order_cancelled(txn.order, 'M-Pesa prompt was cancelled by the customer.')
-        else:
-            txn.status = 'failed'
-            txn.save()
-        
-        logger.info(f"M-Pesa callback processed: {checkout_request_id} - Code {result_code}")
-    
-    except Exception as e:
-        logger.error(f"M-Pesa callback error: {e}")
-    
-    return JsonResponse({'ResultCode': 0, 'ResultDesc': 'Accepted'})
 
+            with transaction.atomic():
+
+                txn.status = "cancelled"
+                txn.result_code = result_code_int
+                txn.result_desc = result_desc
+                txn.save()
+
+                if txn.order:
+
+                    _mark_order_cancelled(
+                        txn.order,
+                        "M-Pesa prompt was cancelled by the customer.",
+                    )
+
+            logger.info(
+                "M-Pesa payment cancelled by customer: %s",
+                checkout_request_id,
+            )
+
+        # =========================================================
+        # OTHER M-PESA FAILURE
+        # =========================================================
+
+        else:
+
+            txn.status = "failed"
+            txn.result_code = result_code_int
+            txn.result_desc = result_desc
+            txn.save()
+
+            logger.warning(
+                "M-Pesa payment failed. "
+                "Checkout: %s | Code: %s | Description: %s",
+                checkout_request_id,
+                result_code_int,
+                result_desc,
+            )
+
+        return JsonResponse({
+            "ResultCode": 0,
+            "ResultDesc": "Accepted",
+        })
+
+    except json.JSONDecodeError:
+        logger.exception(
+            "Invalid JSON received from M-Pesa callback."
+        )
+
+        return JsonResponse({
+            "ResultCode": 0,
+            "ResultDesc": "Accepted",
+        })
+
+    except Exception:
+        logger.exception(
+            "Unexpected error while processing M-Pesa callback."
+        )
+
+        # Always acknowledge the callback so Safaricom does not
+        # repeatedly resend it because of an application error.
+        return JsonResponse({
+            "ResultCode": 0,
+            "ResultDesc": "Accepted",
+        })
 
 @require_POST
 @login_required

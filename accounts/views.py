@@ -328,7 +328,7 @@ def login_view(request):
 
     return render(
         request,
-        "accounts/login.html",
+        "account/login.html",
         {
             "next": next_url,
             "google_enabled": google_enabled,
