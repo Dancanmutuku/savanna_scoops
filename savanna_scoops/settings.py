@@ -1,31 +1,48 @@
 from pathlib import Path
 from decouple import config
-from urllib.parse import urlparse, unquote
+import dj_database_url
+from urllib.parse import urlparse
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = config('SECRET_KEY')
 DEBUG = config('DEBUG', default=False, cast=bool)
 RAILWAY_PUBLIC_DOMAIN = config('RAILWAY_PUBLIC_DOMAIN', default='').strip()
+VERCEL_URL = config('VERCEL_URL', default='').strip()
+VERCEL_BRANCH_URL = config('VERCEL_BRANCH_URL', default='').strip()
+VERCEL_PROJECT_PRODUCTION_URL = config('VERCEL_PROJECT_PRODUCTION_URL', default='').strip()
 APP_BASE_URL = config(
     'APP_BASE_URL',
     default=f'https://{RAILWAY_PUBLIC_DOMAIN}' if RAILWAY_PUBLIC_DOMAIN else '',
 ).strip().rstrip('/')
 
 ALLOWED_HOSTS = [host.strip() for host in config('ALLOWED_HOSTS', default='localhost,127.0.0.1').split(',') if host.strip()]
-if RAILWAY_PUBLIC_DOMAIN and RAILWAY_PUBLIC_DOMAIN not in ALLOWED_HOSTS:
-    ALLOWED_HOSTS.append(RAILWAY_PUBLIC_DOMAIN)
-if APP_BASE_URL:
-    app_host = urlparse(APP_BASE_URL).netloc
-    if app_host and app_host not in ALLOWED_HOSTS:
-        ALLOWED_HOSTS.append(app_host)
+for configured_url in (
+    RAILWAY_PUBLIC_DOMAIN,
+    VERCEL_URL,
+    VERCEL_BRANCH_URL,
+    VERCEL_PROJECT_PRODUCTION_URL,
+    APP_BASE_URL,
+):
+    if configured_url:
+        configured_host = urlparse(
+            configured_url if '://' in configured_url else f'//{configured_url}'
+        ).hostname
+        if configured_host and configured_host not in ALLOWED_HOSTS:
+            ALLOWED_HOSTS.append(configured_host)
 
 CSRF_TRUSTED_ORIGINS = [
     origin.strip()
     for origin in config('CSRF_TRUSTED_ORIGINS', default='').split(',')
     if origin.strip()
 ]
-for origin in (APP_BASE_URL, f'https://{RAILWAY_PUBLIC_DOMAIN}' if RAILWAY_PUBLIC_DOMAIN else ''):
+for origin in (
+    APP_BASE_URL,
+    f'https://{RAILWAY_PUBLIC_DOMAIN}' if RAILWAY_PUBLIC_DOMAIN else '',
+    f'https://{VERCEL_URL}' if VERCEL_URL else '',
+    f'https://{VERCEL_BRANCH_URL}' if VERCEL_BRANCH_URL else '',
+    f'https://{VERCEL_PROJECT_PRODUCTION_URL}' if VERCEL_PROJECT_PRODUCTION_URL else '',
+):
     if origin and origin not in CSRF_TRUSTED_ORIGINS:
         CSRF_TRUSTED_ORIGINS.append(origin)
 
@@ -95,20 +112,17 @@ WSGI_APPLICATION = 'savanna_scoops.wsgi.application'
 USE_SQLITE = config('USE_SQLITE', default=False, cast=bool)
 DATABASE_URL = '' if USE_SQLITE else config('DATABASE_URL', default='')
 if DATABASE_URL:
-    parsed = urlparse(DATABASE_URL)
     database_sslmode = config('DATABASE_SSLMODE', default='require').strip()
     DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.postgresql',
-            'NAME': parsed.path.lstrip('/'),
-            'USER': unquote(parsed.username or ''),
-            'PASSWORD': unquote(parsed.password or ''),
-            'HOST': parsed.hostname or '',
-            'PORT': str(parsed.port or ''),
-            'CONN_MAX_AGE': 600,
-            'OPTIONS': {'sslmode': database_sslmode} if database_sslmode else {},
-        }
+        'default': dj_database_url.parse(
+            DATABASE_URL,
+            conn_max_age=600,
+            ssl_require=database_sslmode == 'require',
+        )
     }
+    database_password = config('DATABASE_PASSWORD', default='')
+    if database_password:
+        DATABASES['default']['PASSWORD'] = database_password
 else:
     DATABASES = {
         'default': {

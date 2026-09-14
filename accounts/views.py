@@ -462,6 +462,7 @@ def google_onboarding_complete(request):
     """
     Completes the onboarding process after the user
     has accepted the Terms and Privacy Policy.
+    
 
     This endpoint validates the temporary onboarding
     information before creating the local Django user.

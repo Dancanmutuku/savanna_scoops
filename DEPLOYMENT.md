@@ -1,5 +1,30 @@
 # Savanna Scoops Deployment
 
+## Vercel with Supabase Postgres
+
+Vercel does not provide persistent local storage for Django. Configure Supabase as the
+production database in the Vercel project settings under **Settings > Environment Variables**:
+
+```env
+DEBUG=False
+USE_SQLITE=False
+DATABASE_URL=postgresql://postgres:URL_ENCODED_PASSWORD@db.ikgmcltiezdxuczjexsw.supabase.co:5432/postgres
+DATABASE_SSLMODE=require
+```
+
+Keep `DATABASE_URL` as a Vercel secret and add it to the Production environment (and Preview
+only if needed). URL-encode special characters in the database password, then run migrations
+against Supabase once before serving traffic:
+
+```bash
+python manage.py migrate --noinput
+```
+
+The Django settings already select PostgreSQL whenever `DATABASE_URL` is present and
+`USE_SQLITE=False`. For passwords containing characters that are difficult to encode, set
+`DATABASE_URL` without a password and provide the raw password separately as
+`DATABASE_PASSWORD`. Do not commit either secret or use SQLite for deployed data.
+
 ## Docker
 
 This project now includes a Docker stack for local and server-style runs:
