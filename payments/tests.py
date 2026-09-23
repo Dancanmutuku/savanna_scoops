@@ -62,3 +62,57 @@ class MpesaStatusTests(TestCase):
         self.assertEqual(order.payment_status, 'paid')
         self.assertEqual(order.status, 'confirmed')
         mock_queue.assert_called_once_with(order.id)
+
+    @override_settings(SECURE_SSL_REDIRECT=False)
+    def test_mpesa_callback_handles_single_dict_metadata_item(self):
+        user = User.objects.create_user(username='jack@example.com', email='jack@example.com', password='pass12345')
+        self.client.force_login(user)
+        order = Order.objects.create(
+            user=user,
+            customer_name='Jack Customer',
+            customer_email='jack@example.com',
+            customer_phone='+254712345678',
+            delivery_address='Nairobi',
+            subtotal=500,
+            delivery_fee=150,
+            total=650,
+            payment_method='M-Pesa',
+        )
+        txn = MpesaTransaction.objects.create(
+            order=order,
+            merchant_request_id='merchant-2',
+            checkout_request_id='checkout-2',
+            phone_number='+254712345678',
+            amount=650,
+            status='pending',
+        )
+
+        payload = {
+            'Body': {
+                'stkCallback': {
+                    'MerchantRequestID': 'merchant-2',
+                    'CheckoutRequestID': 'checkout-2',
+                    'ResultCode': 0,
+                    'ResultDesc': 'The service request is processed successfully.',
+                    'CallbackMetadata': {
+                        'Item': [
+                            {'Name': 'Amount', 'Value': 650.0},
+                            {'Name': 'MpesaReceiptNumber', 'Value': 'QJABC123'},
+                        ]
+                    }
+                }
+            }
+        }
+
+        response = self.client.post(
+            reverse('mpesa_callback'),
+            data=json.dumps(payload),
+            content_type='application/json',
+        )
+
+        self.assertEqual(response.status_code, 200)
+        txn.refresh_from_db()
+        self.assertEqual(txn.status, 'success')
+        self.assertEqual(txn.mpesa_receipt_number, 'QJABC123')
+        order.refresh_from_db()
+        self.assertEqual(order.payment_status, 'paid')

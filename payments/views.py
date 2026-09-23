@@ -60,9 +60,21 @@ def _callback_token_is_valid(request):
 
 
 def _callback_metadata_value(callback, name):
-    for item in callback.get('CallbackMetadata', {}).get('Item', []):
+    metadata = callback.get('CallbackMetadata', {})
+    items = metadata.get('Item', [])
+
+    if isinstance(items, dict):
+        items = [items]
+
+    if not isinstance(items, list):
+        return None
+
+    for item in items:
+        if not isinstance(item, dict):
+            continue
         if item.get('Name') == name:
             return item.get('Value')
+
     return None
 
 
