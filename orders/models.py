@@ -1,7 +1,7 @@
+import uuid
 from django.db import models
 from django.contrib.auth.models import User
 from store.models import Flavor
-import uuid
 
 
 def generate_order_number():
@@ -18,8 +18,19 @@ class Order(models.Model):
         ('cancelled', 'Cancelled'),
     ]
 
+    # unique=True automatically creates a unique index on order_number
     order_number = models.CharField(max_length=20, unique=True, default=generate_order_number)
-    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='orders')
+    
+    # db_index=False prevents Django from creating a redundant single-column user_id index
+    # (our composite index below covers user_id lookups starting with the leftmost column)
+    user = models.ForeignKey(
+        User, 
+        on_delete=models.SET_NULL, 
+        null=True, 
+        blank=True, 
+        related_name='orders',
+        db_index=False
+    )
     customer_name = models.CharField(max_length=200)
     customer_email = models.EmailField()
     customer_phone = models.CharField(max_length=20)
@@ -28,16 +39,24 @@ class Order(models.Model):
     subtotal = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     delivery_fee = models.DecimalField(max_digits=8, decimal_places=2, default=150)
     total = models.DecimalField(max_digits=10, decimal_places=2, default=0)
-    status = models.CharField(max_length=30, choices=STATUS_CHOICES, default='pending')
+    
+    # Indexed for filtering order status & dashboard lists
+    status = models.CharField(max_length=30, choices=STATUS_CHOICES, default='pending', db_index=True)
     payment_method = models.CharField(max_length=50, default='M-Pesa')
-    payment_status = models.CharField(max_length=20, default='pending')
-    mpesa_receipt = models.CharField(max_length=50, blank=True)
+    payment_status = models.CharField(max_length=20, default='pending', db_index=True)
+    mpesa_receipt = models.CharField(max_length=50, blank=True, db_index=True)
     notes = models.TextField(blank=True)
-    created_at = models.DateTimeField(auto_now_add=True)
+    
+    # Indexed for global sorting by date
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
         ordering = ['-created_at']
+        indexes = [
+            # Matches the composite index: orders_order_user_created_idx
+            models.Index(fields=['user', '-created_at'], name='orders_order_user_created_idx'),
+        ]
 
     def __str__(self):
         return f"Order {self.order_number} - {self.customer_name}"
