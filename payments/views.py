@@ -408,52 +408,29 @@ def check_payment_status(request):
                 "error": "Payment was cancelled.",
             }
         )
-    # EXPLICIT M-PESA FAILURE
-    if result_code is not None:
-
-        logger.warning(
-            "M-Pesa payment failed for %s. "
+    # Safaricom can return non-zero result codes while the transaction is still
+    # being processed or until the callback catches up. Do not cancel the order
+    # on these intermediate responses; keep it pending and retry.
+    if result_code is not None and result_code != 0:
+        logger.info(
+            "M-Pesa payment for %s is still pending or not final. "
             "ResultCode=%s ResultDesc=%s",
             checkout_request_id,
             result_code,
             result_desc,
         )
 
-        with transaction.atomic():
-
-            txn.status = "failed"
-            txn.result_code = result_code
-            txn.result_desc = (
-                result_desc or "M-Pesa payment failed."
-            )
-
-            txn.save(
-                update_fields=[
-                    "status",
-                    "result_code",
-                    "result_desc",
-                ]
-            )
-
-            if txn.order:
-                _mark_order_cancelled(
-                    txn.order,
-                    (
-                        "M-Pesa payment failed. "
-                        f"{result_desc}"
-                    ),
-                )
-
         return JsonResponse(
             {
                 "success": False,
-                "status": "failed",
-                "error": (
-                    result_desc
-                    or "M-Pesa payment failed."
+                "status": "pending",
+                "retry": True,
+                "message": (
+                    "We are still waiting for M-Pesa to confirm your payment."
                 ),
             }
         )
+
     logger.warning(
         "M-Pesa status unavailable for %s. "
         "Response: %s",

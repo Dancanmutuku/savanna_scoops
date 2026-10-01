@@ -63,6 +63,43 @@ class MpesaStatusTests(TestCase):
         self.assertEqual(order.status, 'confirmed')
         mock_queue.assert_called_once_with(order.id)
 
+    @override_settings(SECURE_SSL_REDIRECT=False)
+    def test_non_terminal_result_code_keeps_order_pending(self):
+        user = User.objects.create_user(username='leo@example.com', email='leo@example.com', password='pass12345')
+        self.client.force_login(user)
+        order = Order.objects.create(
+            user=user,
+            customer_name='Leo Customer',
+            customer_email='leo@example.com',
+            customer_phone='+254712345678',
+            delivery_address='Nairobi',
+            subtotal=500,
+            delivery_fee=150,
+            total=650,
+            payment_method='M-Pesa',
+        )
+        MpesaTransaction.objects.create(
+            order=order,
+            merchant_request_id='merchant-3',
+            checkout_request_id='checkout-3',
+            phone_number='+254712345678',
+            amount=650,
+            status='pending',
+        )
+
+        with patch('payments.views.query_stk_status', return_value={'ResultCode': '2001', 'ResultDesc': 'The transaction is still processing'}):
+            response = self.client.post(
+                reverse('check_payment_status'),
+                data=json.dumps({'checkout_request_id': 'checkout-3'}),
+                content_type='application/json',
+            )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()['status'], 'pending')
+
+        order.refresh_from_db()
+        self.assertEqual(order.payment_status, 'pending')
+
     @override_settings(SECURE_SSL_REDIRECT=False, MPESA_CALLBACK_TOKEN='test-token')
     def test_mpesa_callback_handles_single_dict_metadata_item(self):
         user = User.objects.create_user(username='jack@example.com', email='jack@example.com', password='pass12345')
