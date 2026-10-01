@@ -796,7 +796,7 @@ def mpesa_callback(request):
         )
 
         # Always acknowledge the callback so Safaricom does not
-        # repeatedly resend it because of an application error.
+        # retry it because of an application error.
         return JsonResponse({
             "ResultCode": 0,
             "ResultDesc": "Accepted",

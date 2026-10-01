@@ -7,18 +7,13 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = config('SECRET_KEY')
 DEBUG = config('DEBUG', default=False, cast=bool)
-RAILWAY_PUBLIC_DOMAIN = config('RAILWAY_PUBLIC_DOMAIN', default='').strip()
 VERCEL_URL = config('VERCEL_URL', default='').strip()
 VERCEL_BRANCH_URL = config('VERCEL_BRANCH_URL', default='').strip()
 VERCEL_PROJECT_PRODUCTION_URL = config('VERCEL_PROJECT_PRODUCTION_URL', default='').strip()
-APP_BASE_URL = config(
-    'APP_BASE_URL',
-    default=f'https://{RAILWAY_PUBLIC_DOMAIN}' if RAILWAY_PUBLIC_DOMAIN else '',
-).strip().rstrip('/')
+APP_BASE_URL = config('APP_BASE_URL', default='').strip().rstrip('/')
 
 ALLOWED_HOSTS = [host.strip() for host in config('ALLOWED_HOSTS', default='localhost,127.0.0.1').split(',') if host.strip()]
 for configured_url in (
-    RAILWAY_PUBLIC_DOMAIN,
     VERCEL_URL,
     VERCEL_BRANCH_URL,
     VERCEL_PROJECT_PRODUCTION_URL,
@@ -38,7 +33,6 @@ CSRF_TRUSTED_ORIGINS = [
 ]
 for origin in (
     APP_BASE_URL,
-    f'https://{RAILWAY_PUBLIC_DOMAIN}' if RAILWAY_PUBLIC_DOMAIN else '',
     f'https://{VERCEL_URL}' if VERCEL_URL else '',
     f'https://{VERCEL_BRANCH_URL}' if VERCEL_BRANCH_URL else '',
     f'https://{VERCEL_PROJECT_PRODUCTION_URL}' if VERCEL_PROJECT_PRODUCTION_URL else '',
@@ -235,12 +229,10 @@ EMAIL_HOST_USER = config('EMAIL_HOST_USER', default='')
 EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD', default='')
 DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL', default='noreply@savanascoops.com')
 DEFAULT_FROM_NAME = config('DEFAULT_FROM_NAME', default='Savanna Scoops')
-EMAIL_DELIVERY_BACKEND = config('EMAIL_DELIVERY_BACKEND', default='resend' if not DEBUG else 'smtp').lower()
+EMAIL_DELIVERY_BACKEND = config('EMAIL_DELIVERY_BACKEND', default='brevo' if not DEBUG else 'smtp').lower()
 EMAIL_SEND_ASYNC = config('EMAIL_SEND_ASYNC', default='True' if not DEBUG else 'False', cast=bool)
 BREVO_API_KEY = config('BREVO_API_KEY', default='')
 BREVO_API_URL = config('BREVO_API_URL', default='https://api.brevo.com/v3/smtp/email')
-RESEND_API_KEY = config('RESEND_API_KEY', default='')
-RESEND_API_URL = config('RESEND_API_URL', default='https://api.resend.com/emails')
 
 # Crispy Forms
 CRISPY_ALLOWED_TEMPLATE_PACKS = 'bootstrap5'

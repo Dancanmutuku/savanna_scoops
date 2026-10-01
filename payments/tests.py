@@ -63,7 +63,7 @@ class MpesaStatusTests(TestCase):
         self.assertEqual(order.status, 'confirmed')
         mock_queue.assert_called_once_with(order.id)
 
-    @override_settings(SECURE_SSL_REDIRECT=False)
+    @override_settings(SECURE_SSL_REDIRECT=False, MPESA_CALLBACK_TOKEN='test-token')
     def test_mpesa_callback_handles_single_dict_metadata_item(self):
         user = User.objects.create_user(username='jack@example.com', email='jack@example.com', password='pass12345')
         self.client.force_login(user)
@@ -108,6 +108,7 @@ class MpesaStatusTests(TestCase):
             reverse('mpesa_callback'),
             data=json.dumps(payload),
             content_type='application/json',
+            HTTP_X_MPESA_CALLBACK_TOKEN='test-token',
         )
 
         self.assertEqual(response.status_code, 200)

@@ -2,7 +2,7 @@
 
 Savanna Scoops is a Django app for an ice cream shop with customer checkout, inventory/admin views, orders, and M-Pesa payment callbacks.
 
-This guide shows how to run it locally on your machine without Docker.
+This guide shows how to run it locally on your machine.
 
 ## Requirements
 
@@ -160,18 +160,11 @@ MPESA_ENVIRONMENT=sandbox
 
 Do not commit real secrets to Git.
 
-## Deploying To Railway
+## Production Notes
 
-Railway deployment notes live in `DEPLOYMENT.md`.
+Production deployment notes live in `DEPLOYMENT.md`.
 
-Short version:
-
-- Add a Railway PostgreSQL service.
-- Set `DATABASE_URL=${{Postgres.DATABASE_URL}}`.
-- Set `USE_SQLITE=False`.
-- Set `EMAIL_DELIVERY_BACKEND=resend`.
-- Put your Resend API key in Railway Variables as `RESEND_API_KEY`.
-- Use a verified Resend sender email as `DEFAULT_FROM_EMAIL`.
+Keep your settings in environment variables, use a hosted PostgreSQL database for production, and set `USE_SQLITE=False` once you deploy.
 
 ## Troubleshooting
 
