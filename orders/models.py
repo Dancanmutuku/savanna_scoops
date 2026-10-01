@@ -20,6 +20,11 @@ class Order(models.Model):
 
     # unique=True automatically creates a unique index on order_number
     order_number = models.CharField(max_length=20, unique=True, default=generate_order_number)
+
+    def save(self, *args, **kwargs):
+        if not self.order_number or not self.order_number.startswith('SS-'):
+            self.order_number = generate_order_number()
+        super().save(*args, **kwargs)
     
     # db_index=False prevents Django from creating a redundant single-column user_id index
     # (our composite index below covers user_id lookups starting with the leftmost column)

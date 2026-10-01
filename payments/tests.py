@@ -64,6 +64,29 @@ class MpesaStatusTests(TestCase):
         mock_queue.assert_called_once_with(order.id)
 
     @override_settings(SECURE_SSL_REDIRECT=False)
+    def test_order_number_is_generated_separately_from_mpesa_receipt(self):
+        user = User.objects.create_user(username='maria@example.com', email='maria@example.com', password='pass12345')
+        self.client.force_login(user)
+        order = Order.objects.create(
+            user=user,
+            customer_name='Maria Customer',
+            customer_email='maria@example.com',
+            customer_phone='+254712345678',
+            delivery_address='Nairobi',
+            subtotal=500,
+            delivery_fee=150,
+            total=650,
+            payment_method='M-Pesa',
+        )
+
+        order.order_number = 'QJABC123'
+        order.mpesa_receipt = 'QJABC123'
+        order.save()
+
+        self.assertTrue(order.order_number.startswith('SS-'))
+        self.assertEqual(order.mpesa_receipt, 'QJABC123')
+
+    @override_settings(SECURE_SSL_REDIRECT=False)
     def test_non_terminal_result_code_keeps_order_pending(self):
         user = User.objects.create_user(username='leo@example.com', email='leo@example.com', password='pass12345')
         self.client.force_login(user)
