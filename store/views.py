@@ -31,7 +31,7 @@ def shop(request):
             Q(name__icontains=search) | Q(description__icontains=search)
         )
     
-    # Filter by type
+    # Filter by type utyui
     filter_type = request.GET.get('filter', 'all')
     if filter_type == 'dairy-free':
         flavors = flavors.filter(is_dairy_free=True)
