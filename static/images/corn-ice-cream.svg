@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="title">
+  <title>Corn ice cream</title>
+  <path fill="#4d8c43" d="M34 39C29 25 34 12 50 5c-1 15-5 27-13 38l-3-4Z"/>
+  <path fill="#74a94b" d="M36 41C40 26 49 19 59 17c-2 13-9 23-21 28l-2-4Z"/>
+  <path fill="#9aba61" d="M31 39C24 28 23 17 27 7c9 9 13 20 10 35l-6-3Z"/>
+  <path fill="#39854a" d="M31 42C22 35 17 25 17 17c10 6 16 14 19 27l-5-2Z"/>
+  <path fill="#e9bd78" stroke="#a66b3e" stroke-width="1.5" d="m12 28 27 11-8 22-19-33Z"/>
+  <path d="m16 35 23 9M20 42l17 7M24 49l11 5M15 33l9 18M22 36l9 18M29 39l6 12" fill="none" stroke="#a66b3e" stroke-width="1.4" opacity=".8"/>
+  <path fill="#fffdf4" stroke="#d9d4c8" stroke-width="1.2" d="M11 28c-4-4-2-11 3-13 1-7 10-10 15-5 6-3 13 2 12 8 5 3 4 10-1 13-6 4-22 3-29-3Z"/>
+  <path fill="#fff" d="M15 23c-2-4 1-8 5-8 2-5 8-6 11-2 4-2 8 1 8 5 4 2 3 7-1 9-5 3-18 2-23-1Z"/>
+  <path fill="none" stroke="#e7e1d5" stroke-width="1.2" d="M19 18c3-2 6-1 8 1m7-2c2 0 4 1 5 3"/>
+  <g fill="#f3c94e">
+    <ellipse cx="52" cy="12" rx="1.6" ry="2.2"/><ellipse cx="56" cy="13" rx="1.6" ry="2.2"/>
+    <ellipse cx="53" cy="17" rx="1.6" ry="2.2"/><ellipse cx="57" cy="18" rx="1.6" ry="2.2"/>
+  </g>
+</svg>
