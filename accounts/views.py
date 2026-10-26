@@ -251,12 +251,10 @@ def login_view(request):
 
     if request.method == "POST":
 
-        identifier = request.POST.get(
-            "identifier",
-            request.POST.get(
-                "email",
-                "",
-            ),
+        identifier = (
+            request.POST.get("identifier")
+            or request.POST.get("login")
+            or request.POST.get("email", "")
         ).strip()
 
         resolved_user = get_user_for_identifier(

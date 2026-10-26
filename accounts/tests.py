@@ -53,3 +53,21 @@ class AccountIdentifierTests(TestCase):
                 )
 
                 self.assertEqual(authenticated_user, user)
+
+    def test_login_form_accepts_new_password_from_reset_flow(self):
+        User.objects.create_user(
+            username="janemwangi",
+            email="jane@example.com",
+            password="ResetPass123!",
+        )
+
+        response = self.client.post(
+            "/accounts/login/",
+            {
+                "login": "jane@example.com",
+                "password": "ResetPass123!",
+            },
+        )
+
+        self.assertEqual(response.status_code, 302)
+        self.assertTrue(response.wsgi_request.user.is_authenticated)
