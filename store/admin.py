@@ -4,7 +4,7 @@ from .models import Flavor, Category, Review, SiteSettings
 
 @admin.register(Category)
 class CategoryAdmin(admin.ModelAdmin):
-    list_display = ['name', 'slug', 'icon']
+    list_display = ['name', 'slug']
     prepopulated_fields = {'slug': ('name',)}
 
 

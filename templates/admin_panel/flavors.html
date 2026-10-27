@@ -31,11 +31,11 @@
               {% if flavor.display_image %}
               <img src="{{ flavor.display_image }}" class="w-12 h-12 rounded-2xl object-cover" alt="{{ flavor.name }}"/>
               {% else %}
-              <div class="w-12 h-12 rounded-2xl bg-surface-container-highest flex items-center justify-center text-2xl">🍦</div>
+              <div class="w-12 h-12 rounded-2xl bg-surface-container-highest" aria-hidden="true"></div>
               {% endif %}
               <div>
                 <p class="text-sm font-black">{{ flavor.name }}</p>
-                <p class="text-[10px] text-on-surface-variant">{{ flavor.rating }}★ · {{ flavor.slug }}</p>
+                <p class="text-[10px] text-on-surface-variant">Rating {{ flavor.rating }}/5 · {{ flavor.slug }}</p>
               </div>
             </div>
           </td>

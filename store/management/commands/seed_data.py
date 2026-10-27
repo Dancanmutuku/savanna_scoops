@@ -160,10 +160,10 @@ FLAVORS = [
 ]
 
 CATEGORIES = [
-    {'name': 'Classic', 'slug': 'classic', 'icon': '🍦', 'description': 'Timeless, beloved flavors'},
-    {'name': 'Fruity', 'slug': 'fruity', 'icon': '🍓', 'description': 'Fresh fruit bursts'},
-    {'name': 'Sorbet & Dairy-Free', 'slug': 'sorbet', 'icon': '🌱', 'description': 'Vegan-friendly options'},
-    {'name': 'Premium', 'slug': 'premium', 'icon': '✨', 'description': 'Chef\'s special selections'},
+    {'name': 'Classic', 'slug': 'classic', 'description': 'Timeless, beloved flavors'},
+    {'name': 'Fruity', 'slug': 'fruity', 'description': 'Fresh fruit bursts'},
+    {'name': 'Sorbet & Dairy-Free', 'slug': 'sorbet', 'description': 'Vegan-friendly options'},
+    {'name': 'Premium', 'slug': 'premium', 'description': 'Chef\'s special selections'},
 ]
 
 INVENTORY_ITEMS = [

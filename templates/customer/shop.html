@@ -81,7 +81,7 @@
               {% if flavor.display_image %}
               <img src="{{ flavor.display_image }}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" alt="{{ flavor.name }}" loading="lazy"/>
               {% else %}
-              <div class="w-full h-full bg-surface-container-highest flex items-center justify-center text-6xl">🍦</div>
+              <div class="w-full h-full bg-surface-container-highest" aria-hidden="true"></div>
               {% endif %}
 
               <div class="absolute top-4 left-4">
@@ -137,7 +137,6 @@
         </div>
         {% empty %}
         <div class="md:col-span-2 lg:col-span-3 text-center py-20">
-          <div class="w-20 h-20 bg-surface-container-highest rounded-3xl flex items-center justify-center mx-auto mb-4 text-4xl">🍦</div>
           <h3 class="text-xl font-sans font-bold text-on-surface mb-2">No flavors found</h3>
           <p class="text-on-surface-variant">{% if search %}Try a different search.{% else %}Check back soon!{% endif %}</p>
         </div>
@@ -149,17 +148,14 @@
       <div class="max-w-7xl mx-auto px-4 sm:px-6 md:px-10">
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
           <div class="text-center p-6 sm:p-8">
-            <div class="w-16 h-16 bg-primary/10 rounded-3xl flex items-center justify-center mx-auto mb-4 text-3xl">🌿</div>
             <h4 class="font-sans font-bold text-lg mb-2">All-Natural Ingredients</h4>
             <p class="text-sm text-on-surface-variant leading-relaxed">Sourced from local Kenyan farms with zero artificial additives.</p>
           </div>
           <div class="text-center p-6 sm:p-8">
-            <div class="w-16 h-16 bg-secondary/10 rounded-3xl flex items-center justify-center mx-auto mb-4 text-3xl">🚚</div>
             <h4 class="font-sans font-bold text-lg mb-2">Fast Delivery</h4>
             <p class="text-sm text-on-surface-variant leading-relaxed">Express delivery across Nairobi in insulated packs. Fresh every time.</p>
           </div>
           <div class="text-center p-6 sm:p-8">
-            <div class="w-16 h-16 bg-primary/10 rounded-3xl flex items-center justify-center mx-auto mb-4 text-3xl">📱</div>
             <h4 class="font-sans font-bold text-lg mb-2">M-Pesa Payments</h4>
             <p class="text-sm text-on-surface-variant leading-relaxed">Pay securely via M-Pesa Express. One tap and you're done.</p>
           </div>

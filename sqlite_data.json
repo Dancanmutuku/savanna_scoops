@@ -317,8 +317,7 @@
   "fields": {
     "name": "Classic",
     "slug": "classic",
-    "description": "Timeless, beloved flavors",
-    "icon": "🍦"
+    "description": "Timeless, beloved flavors"
   }
 },
 {
@@ -327,8 +326,7 @@
   "fields": {
     "name": "Fruity",
     "slug": "fruity",
-    "description": "Fresh fruit bursts",
-    "icon": "🍓"
+    "description": "Fresh fruit bursts"
   }
 },
 {
@@ -337,8 +335,7 @@
   "fields": {
     "name": "Sorbet & Dairy-Free",
     "slug": "sorbet",
-    "description": "Vegan-friendly options",
-    "icon": "🌱"
+    "description": "Vegan-friendly options"
   }
 },
 {
@@ -347,8 +344,7 @@
   "fields": {
     "name": "Premium",
     "slug": "premium",
-    "description": "Chef's special selections",
-    "icon": "✨"
+    "description": "Chef's special selections"
   }
 },
 {

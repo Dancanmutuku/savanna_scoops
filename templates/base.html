@@ -158,7 +158,7 @@
         const data = await resp.json();
         if (data.success) {
           updateCartBadge(data.cart_count);
-          showToast(`${flavorName} added to cart! 🍦`);
+          showToast(`${flavorName} added to cart!`);
         }
       } catch(e) { showToast('Something went wrong', 'error'); }
     }

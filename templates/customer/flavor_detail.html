@@ -35,11 +35,9 @@
 
         <div class="flex flex-wrap items-center justify-center md:justify-start gap-4 sm:gap-6">
           <div class="text-3xl sm:text-4xl font-bold" style="color: var(--color-primary);">KES {{ flavor.price }}</div>
-          <div class="flex items-center gap-1">
-            {% for i in "12345" %}
-              <span class="text-xl {% if forloop.counter <= flavor.rating|floatformat:0|add:0 %}text-yellow-400{% else %}text-gray-500{% endif %}">&#9733;</span>
-            {% endfor %}
-            <span class="ml-2 opacity-70 text-sm sm:text-base">({{ reviews.count }} reviews)</span>
+          <div class="text-sm sm:text-base">
+            <span>Rating {{ flavor.rating }}/5</span>
+            <span class="ml-2 opacity-70">({{ reviews.count }} reviews)</span>
           </div>
           {% if flavor.status == 'out' %}
             <span class="px-4 py-2 rounded-full text-sm font-bold bg-red-500">Out of Stock</span>
@@ -87,11 +85,7 @@
                       <p class="text-xs text-gray-400">{{ review.created_at|date:"M d, Y" }}</p>
                     </div>
                   </div>
-                  <div class="flex">
-                    {% for i in "12345" %}
-                      <span class="{% if forloop.counter <= review.rating %}text-yellow-400{% else %}text-gray-300{% endif %}">&#9733;</span>
-                    {% endfor %}
-                  </div>
+                  <span class="text-sm text-gray-500">Rating: {{ review.rating }}/5</span>
                 </div>
                 <p class="text-gray-600 leading-relaxed">{{ review.comment }}</p>
               </div>
@@ -111,7 +105,7 @@
                 {% for i in "12345" %}
                   <label class="cursor-pointer">
                     <input type="radio" name="rating" value="{{ forloop.counter }}" class="sr-only" required>
-                    <span class="text-2xl star-btn" onclick="setRating({{ forloop.counter }})">&#9734;</span>
+                    <span class="inline-flex w-9 h-9 items-center justify-center rounded-lg border border-gray-300 text-sm font-semibold" onclick="setRating({{ forloop.counter }})">{{ forloop.counter }}</span>
                   </label>
                 {% endfor %}
               </div>

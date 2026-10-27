@@ -72,14 +72,12 @@
 
       {% elif order_id %}
       <div class="sculpted-card rounded-[2.5rem] p-10 text-center">
-        <div class="text-4xl mb-4">🔍</div>
         <h3 class="font-sans font-bold text-xl mb-2">Order Not Found</h3>
         <p class="text-on-surface-variant">No order found with number "{{ order_id }}". Check your confirmation email.</p>
       </div>
 
       {% else %}
       <div class="sculpted-card rounded-[2.5rem] p-10 text-center">
-        <div class="w-24 h-24 bg-surface-container-highest rounded-[2.5rem] flex items-center justify-center mx-auto mb-6 text-5xl">🚴</div>
         <h3 class="text-2xl font-sans font-black text-on-surface tracking-tight">Scoop Tracker</h3>
         <p class="text-on-surface-variant max-w-sm mx-auto mt-3 text-base">
           Enter your order number above to track your delivery in real-time.

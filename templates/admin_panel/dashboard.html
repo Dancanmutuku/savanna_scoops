@@ -14,7 +14,7 @@
           <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>
         </div>
         <div class="flex items-center gap-1 font-sans font-bold text-sm {% if revenue_trend >= 0 %}text-green-600{% else %}text-tertiary{% endif %}">
-          {% if revenue_trend >= 0 %}↑{% else %}↓{% endif %} {{ revenue_trend|floatformat:1 }}%
+          {% if revenue_trend >= 0 %}+{% endif %}{{ revenue_trend|floatformat:1 }}%
         </div>
       </div>
       <p class="text-xs font-bold text-on-surface-variant uppercase tracking-widest mb-1 opacity-70">Daily Revenue</p>
@@ -45,7 +45,7 @@
         <div class="p-3 rounded-2xl bg-blue-600/10 shadow-sm">
           <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z"/></svg>
         </div>
-        <span class="text-xs font-bold text-blue-600">↑ 0.1°C</span>
+        <span class="text-xs font-bold text-blue-600">+0.1°C</span>
       </div>
       <p class="text-xs font-bold text-on-surface-variant uppercase tracking-widest mb-1 opacity-70">Freezer Temp</p>
       <h3 class="text-3xl font-sans font-black tracking-tighter text-on-surface">-18.4°C</h3>
@@ -60,7 +60,7 @@
         <div class="p-3 rounded-2xl bg-secondary/10 shadow-sm">
           <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-secondary" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
         </div>
-        <span class="text-xs font-bold text-green-600">↑ 8%</span>
+        <span class="text-xs font-bold text-green-600">+8%</span>
       </div>
       <p class="text-xs font-bold text-on-surface-variant uppercase tracking-widest mb-1 opacity-70">Total Orders</p>
       <h3 class="text-3xl font-sans font-black tracking-tighter text-on-surface">{{ recent_transactions.count|add:"0" }}</h3>

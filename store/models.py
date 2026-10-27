@@ -8,7 +8,6 @@ class Category(models.Model):
     name = models.CharField(max_length=100)
     slug = models.SlugField(unique=True)
     description = models.TextField(blank=True)
-    icon = models.CharField(max_length=10, default='🍦')
 
     class Meta:
         verbose_name_plural = 'Categories'
@@ -93,7 +92,7 @@ class Review(models.Model):
         unique_together = ['flavor', 'user']
 
     def __str__(self):
-        return f'{self.user.email} - {self.flavor.name} ({self.rating}★)'
+        return f'{self.user.email} - {self.flavor.name} (rating {self.rating}/5)'
 
 
 class SiteSettings(models.Model):
