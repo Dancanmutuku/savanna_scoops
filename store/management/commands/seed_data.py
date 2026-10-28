@@ -157,6 +157,79 @@ FLAVORS = [
         'total_sales': 145,
         'image_url': 'https://images.unsplash.com/photo-1551024601-bec78aea704b?auto=format&fit=crop&q=80&w=600',
     },
+    {
+        'name': 'Blueberry Ripple',
+        'description': 'Blueberry compote folded into vanilla cream with a gentle swirl of lemon curd. Bright, juicy, and crowd-pleasing.',
+        'price': Decimal('390.00'),
+        'color_hex': '#5376D8',
+        'category': 'fruity',
+        'stock': 135,
+        'is_featured': False,
+        'rating': Decimal('4.7'),
+        'total_sales': 176,
+        'image_url': 'https://images.unsplash.com/photo-1519996521430-02b4d6cb0af4?auto=format&fit=crop&q=80&w=600',
+    },
+    {
+        'name': 'Cinnamon Swirl Crunch',
+        'description': 'Warm cinnamon-spiced cream layered with caramelized biscuit crumbs for a cozy, bakery-inspired finish.',
+        'price': Decimal('410.00'),
+        'color_hex': '#B9793F',
+        'category': 'classic',
+        'stock': 125,
+        'is_featured': True,
+        'rating': Decimal('4.8'),
+        'total_sales': 203,
+        'image_url': 'https://images.unsplash.com/photo-1505253716362-afaea1a3d1af?auto=format&fit=crop&q=80&w=600',
+    },
+    {
+        'name': 'Pistachio Rose Cloud',
+        'description': 'Silky pistachio cream with a floral rose finish and crunchy pistachio praline. Light but indulgent.',
+        'price': Decimal('470.00'),
+        'color_hex': '#8DBA83',
+        'category': 'premium',
+        'stock': 78,
+        'is_featured': False,
+        'rating': Decimal('4.8'),
+        'total_sales': 164,
+        'image_url': 'https://images.unsplash.com/photo-1528825871115-3581a5387919?auto=format&fit=crop&q=80&w=600',
+    },
+    {
+        'name': 'Coconut Lime Escape',
+        'description': 'Creamy coconut milk, lime zest, and a hint of kaffir leaf for a tropical quick-freeze flavor with a clean finish.',
+        'price': Decimal('370.00'),
+        'color_hex': '#D9E77B',
+        'category': 'sorbet',
+        'stock': 145,
+        'is_dairy_free': True,
+        'is_featured': True,
+        'rating': Decimal('4.7'),
+        'total_sales': 187,
+        'image_url': 'https://images.unsplash.com/photo-1553530666-ba11a7da3888?auto=format&fit=crop&q=80&w=600',
+    },
+    {
+        'name': 'Peach & Ginger Glow',
+        'description': 'Ripe peach purée balanced with ginger syrup and a touch of vanilla. Bright, fragrant, and mellow.',
+        'price': Decimal('385.00'),
+        'color_hex': '#F5AF5D',
+        'category': 'fruity',
+        'stock': 130,
+        'is_featured': False,
+        'rating': Decimal('4.6'),
+        'total_sales': 143,
+        'image_url': 'https://images.unsplash.com/photo-1631452180519-c014fe946bc7?auto=format&fit=crop&q=80&w=600',
+    },
+    {
+        'name': 'Nairobi Berry Cheesecake',
+        'description': 'Creamy cheesecake-inspired base with berry swirls, crushed biscuits, and a satin-smooth texture.',
+        'price': Decimal('495.00'),
+        'color_hex': '#D174A3',
+        'category': 'premium',
+        'stock': 72,
+        'is_featured': True,
+        'rating': Decimal('4.9'),
+        'total_sales': 221,
+        'image_url': 'https://images.unsplash.com/photo-1486427944299-d1955d23e34d?auto=format&fit=crop&q=80&w=600',
+    },
 ]
 
 CATEGORIES = [
@@ -265,7 +338,7 @@ class Command(BaseCommand):
         # Sample orders
         if Order.objects.count() == 0:
             flavors = list(Flavor.objects.all())
-            for i in range(5):
+            for i in range(12):
                 order = Order.objects.create(
                     customer_name=f'Customer {i+1}',
                     customer_email=f'customer{i+1}@example.com',
@@ -286,7 +359,7 @@ class Command(BaseCommand):
                         price=flavor.price,
                         quantity=random.randint(1, 3),
                     )
-            self.stdout.write('  - 5 sample orders created')
+            self.stdout.write('  - 12 sample orders created')
 
         self.stdout.write(self.style.SUCCESS('\nSavanna Scoops database seeded successfully!'))
         self.stdout.write(self.style.WARNING('   Admin login: admin or admin@savanascoops.co.ke / admin123'))

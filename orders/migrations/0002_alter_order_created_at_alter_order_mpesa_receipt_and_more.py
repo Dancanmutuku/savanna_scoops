@@ -38,8 +38,17 @@ class Migration(migrations.Migration):
             name='user',
             field=models.ForeignKey(blank=True, db_index=False, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='orders', to=settings.AUTH_USER_MODEL),
         ),
-        migrations.AddIndex(
-            model_name='order',
-            index=models.Index(fields=['user', '-created_at'], name='orders_order_user_created_idx'),
+        migrations.RunSQL(
+            sql="""
+                CREATE INDEX IF NOT EXISTS orders_order_user_created_idx
+                ON orders_order (user_id, created_at DESC);
+            """,
+            reverse_sql='DROP INDEX IF EXISTS "orders_order_user_created_idx";',
+            state_operations=[
+                migrations.AddIndex(
+                    model_name='order',
+                    index=models.Index(fields=['user', '-created_at'], name='orders_order_user_created_idx'),
+                ),
+            ],
         ),
     ]
