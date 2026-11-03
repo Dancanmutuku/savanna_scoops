@@ -7,11 +7,12 @@ from django.contrib.auth.decorators import login_required
 from django.db.models import Q
 import json
 
-from .models import Flavor, Category, Review, SiteSettings
+from .models import Flavor, Category, Review, SiteSettings, ensure_default_catalog
 
 
 def shop(request):
     """Main shop / customer landing page."""
+    ensure_default_catalog()
     categories = cache.get('store:categories')
     if categories is None:
         categories = list(Category.objects.all())
@@ -53,6 +54,7 @@ def shop(request):
 
 
 def flavor_detail(request, slug):
+    ensure_default_catalog()
     flavor = get_object_or_404(Flavor.objects.select_related('category'), slug=slug, is_active=True)
     reviews = flavor.reviews.select_related('user').order_by('-created_at')
     related = Flavor.objects.filter(
