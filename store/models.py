@@ -136,7 +136,7 @@ DEFAULT_FLAVORS = [
         'is_featured': False,
         'rating': Decimal('4.6'),
         'total_sales': 89,
-        'image_url': 'https://images.unsplash.com/photo-1563699902328-8b82f9929c8e?auto=format&fit=crop&q=80&w=600',
+        'image_url': 'https://images.unsplash.com/photo-1715194803865-54f4358f87ef?auto=format&fit=crop&q=80&w=600',
     },
     {
         'name': 'Avocado Dream',
@@ -172,7 +172,7 @@ DEFAULT_FLAVORS = [
         'is_featured': False,
         'rating': Decimal('4.7'),
         'total_sales': 176,
-        'image_url': 'https://images.unsplash.com/photo-1519996521430-02b4d6cb0af4?auto=format&fit=crop&q=80&w=600',
+        'image_url': 'https://images.unsplash.com/photo-1627222295124-f8b3fc09e47f?auto=format&fit=crop&q=80&w=600',
     },
     {
         'name': 'Cinnamon Swirl Crunch',
@@ -184,7 +184,7 @@ DEFAULT_FLAVORS = [
         'is_featured': True,
         'rating': Decimal('4.8'),
         'total_sales': 203,
-        'image_url': 'https://images.unsplash.com/photo-1505253716362-afaea1a3d1af?auto=format&fit=crop&q=80&w=600',
+        'image_url': 'https://images.unsplash.com/photo-1597249536924-b226b1a1259d?auto=format&fit=crop&q=80&w=600',
     },
     {
         'name': 'Pistachio Rose Cloud',
